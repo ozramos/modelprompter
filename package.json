@@ -21,7 +21,6 @@
   },
   "devDependencies": {
     "@quasar/app-vite": "^1.0.0",
-    "@vue-macros/reactivity-transform": "^0.3.5",
     "autoprefixer": "^10.4.2",
     "postcss": "^8.4.14"
   },
