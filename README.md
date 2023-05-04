@@ -43,3 +43,31 @@ npm start
 # Build the project for the web
 npm run build
 ```
+
+
+# Database
+```bash
+# SERVER
+id
+name
+
+# CHANNEL
+id
+name
+server
+
+# MESSAGE
+id
+timestamp
+from
+to
+message
+
+# PERSON
+id
+timestamp
+first
+last
+bio
+photo
+```
