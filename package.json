@@ -1,0 +1,30 @@
+{
+  "name": "tensorbuddy",
+  "version": "0.0.1",
+  "description": "Turn your desktop folders into unstructured databases and simulate entire communities of expert and autonomous AIs around them",
+  "productName": "TensorBuddy",
+  "author": "Oz Ramos <0xozram@gmail.com>",
+  "private": true,
+  "scripts": {
+    "start": "quasar dev",
+    "dev": "quasar dev",
+    "build": "quasar build",
+    "test": "echo \"No test specified\" && exit 0"
+  },
+  "dependencies": {
+    "@quasar/extras": "^1.0.0",
+    "quasar": "^2.6.0",
+    "vue": "^3.0.0",
+    "vue-router": "^4.0.0"
+  },
+  "devDependencies": {
+    "@quasar/app-vite": "^1.0.0",
+    "autoprefixer": "^10.4.2",
+    "postcss": "^8.4.14"
+  },
+  "engines": {
+    "node": "^18 || ^16 || ^14.19",
+    "npm": ">= 6.13.4",
+    "yarn": ">= 1.21.1"
+  }
+}
