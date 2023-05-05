@@ -1,7 +1,7 @@
 <template lang="pug">
 // Create a full height q-page, with a footer for the chat input
 // The chat area above it should fill the rest of the page
-q-page(:style-fn='() => ({ height: "calc(100vh - 50px)" })')
+q-page.boxed(:style-fn='() => ({ height: "calc(100vh - 50px)" })')
   div.column(style='height: 100%;')
     // Chat area
     .col.q-pa-md(style='overflow: auto')
@@ -11,6 +11,7 @@ q-page(:style-fn='() => ({ height: "calc(100vh - 50px)" })')
         :text='[message.text]'
         :bg-color='message.sent ? "blue" : "primary"'
         :text-color='message.sent ? "white" : "black"'
+        :stamp='formatDate(message.date)'
       )
       q-chat-message(
         v-if='isThinking'
@@ -30,11 +31,26 @@ q-page(:style-fn='() => ({ height: "calc(100vh - 50px)" })')
 
 
 <script setup>
-import {ref, onMounted, nextTick} from 'vue'
+import {ref, onMounted, computed} from 'vue'
 import {liveQuery} from 'dexie'
 import {useObservable} from '@vueuse/rxjs'
 import store from '/src/store/db.js'
 import llm from '/src/langchain/openai.js'
+
+/**
+ * Format date to YYYY-MM-DD HH:MM
+ */
+function formatDate (date) {
+  if (!(date instanceof Date)) {return ''}
+  
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  const hours = String(date.getHours()).padStart(2, '0')
+  const minutes = String(date.getMinutes()).padStart(2, '0')
+  return `${year}-${month}-${day} ${hours}:${minutes}`
+}
+
 
 /**
  * Handle messages
@@ -43,7 +59,6 @@ let isThinking = ref(false)
 const messages = ref(useObservable(liveQuery(async () => {
   return await store.getMessagesWithSystemPrompt()
 })))
-
 
 /**
  * Submit a message
@@ -57,6 +72,7 @@ async function submit (ev) {
     const message = {
       name: 'User',
       text: input.value,
+      date: new Date(),
       sent: true
     }
     
@@ -72,6 +88,7 @@ async function submit (ev) {
     const response = await llm.call(transformedMessages)
 
     // Add response to chat
+    response.date = new Date()
     response.name = message.name
     response.sent = false
     await store.db.messages.add(response)

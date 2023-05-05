@@ -6,10 +6,10 @@ q-layout(view='lHh Lpr lFf')
       q-toolbar-title
         | TensorBuddy
       div v{{ $pkg.version }}
-  q-drawer(v-model='isMainSidebarOpen' show-if-above bordered)
-    q-list
+  q-drawer.flex.column(v-model='isMainSidebarOpen' show-if-above bordered)
+    q-list.flex.column.full-height
       q-item-label(header)
-        | Servers
+        | Channel
       
       // Links
       q-item(v-for='server in servers' :key='server.title' v-bind='server' clickable :to='server.link')
@@ -18,6 +18,12 @@ q-layout(view='lHh Lpr lFf')
         q-item-section
           q-item-label {{ server.title }}
           q-item-label(caption) {{ server.caption }}
+      
+      //- Add channel button at bottom of list
+      q-space
+      q-list.q-pb-sm(dense)
+        q-item
+          q-btn.full-width New channel
   q-page-container
     router-view
 </template>
