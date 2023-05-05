@@ -9,12 +9,14 @@ q-page(:style-fn='() => ({ height: "calc(100vh - 50px)" })')
         v-for='message in messages'
         :key='message.text'
         :text='[message.text]'
-        :sent='message.sent'
-        :bg-color='message.sent ? "primary" : (message.waiting ? "warning" : "secondary")'
-        :text-color='!message.waiting ? "white" : "black"'
+        :bg-color='message.sent ? "blue" : "primary"'
+        :text-color='message.sent ? "white" : "black"'
       )
-        q-spinner-dots(v-if='message.waiting')
-        span(v-else) {{ message.text }}
+      q-chat-message(
+        v-if='isThinking'
+        bg-color='negative'
+      )
+        q-spinner-dots(size='2rem')
     
     // Input field with submit button at bottom of view
     .col-auto.q-pa-md
@@ -37,6 +39,7 @@ import llm from '/src/langchain/openai.js'
 /**
  * Handle messages
  */
+let isThinking = ref(false)
 const messages = ref(useObservable(liveQuery(async () => {
   return await store.getMessagesWithSystemPrompt()
 })))
@@ -58,22 +61,21 @@ async function submit (ev) {
     }
     
     // Add message to chat
-    // messages.value.push({waiting: true})
-    await store.db.messages.bulkAdd([message, {waiting: true}]).then(async key => {
-      // Clear and focus input
-      input.value = ''
-      $input.value.focus()
-  
-      // Transform messages to OpenAI format
-      const transformedMessages = llm.transformMessages(messages.value)
-      const response = await llm.call(transformedMessages)
-  
-      // Add response to chat
-      response.name = message.name
-      response.sent = false
-      await store.db.messages.delete(key)
-      await store.db.messages.add(response)
-    })
+    input.value = ''
+    $input.value.focus()
+    isThinking.value = true
+    messages.value.push(message)
+    await store.db.messages.add(message)
+
+    // Transform messages to OpenAI format
+    const transformedMessages = llm.transformMessages(messages.value)
+    const response = await llm.call(transformedMessages)
+
+    // Add response to chat
+    response.name = message.name
+    response.sent = false
+    await store.db.messages.add(response)
+    isThinking.value = false
   }
 }
 

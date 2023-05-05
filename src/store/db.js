@@ -4,7 +4,6 @@ import SystemPrompt from '/system-prompt.txt?raw'
 class Store {
   constructor () {
     this.db = new Dexie('chat')
-    this.hasClearedWaiting = false
   }
 
   /**
@@ -24,12 +23,6 @@ class Store {
       })
     }
 
-    // Remove any that are .waiting
-    if (!this.hasClearedWaiting) {
-      await this.db.messages.filter(message => message.waiting).delete()
-      this.hasClearedWaiting = true
-    } 
-  
     return messages
   }
 }
