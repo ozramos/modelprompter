@@ -31,10 +31,11 @@ const messages = ref(useObservable(liveQuery(async () => {
   
   // Add default system prompt if no messages
   if (!messages.length) {
-    messages.unshift({
+    const message = {
       name: 'System',
       text: [SystemPrompt]
-    })
+    }
+    messages.add(message)
   }
 
   return messages
@@ -50,12 +51,16 @@ function submit (ev) {
   if (!ev.ctrlKey) {
     // Remove last enter character
     input.value = input.value.replace(/\n/g, '')
-    
-    // Add message to chat
-    messages.value.push({
+    const message = {
+      user: 1,
       text: [input.value],
       sent: true
-    })
+    }
+    
+    // Add message to chat
+    messages.value.push(message)
+    db.messages.add(message)
+    
     // Clear input
     input.value = ''
   }
