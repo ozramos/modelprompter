@@ -9,20 +9,37 @@ q-page(:style-fn='() => ({ height: "calc(100vh - 50px)" })')
     
     // Input field with submit button at bottom of view
     .col-auto.q-pa-md
-      q-input(v-model='input' @keyup.enter='submit' autogrow dense style="max-height: 350px; overflow: auto")
+      q-input(ref='$input' v-model='input' @keyup.enter='submit' autogrow dense style="max-height: 350px; overflow: auto")
         template(v-slot:append)
           q-btn(color='primary' label='Send' @click='submit')
 </template>
 
-<script setup>
-import { ref } from 'vue'
 
-const messages = ref([
-  {
-    name: 'System',
-    text: [`Welcome! I'm TensorBuddy, a friendly chatbot here to help. Ask me anything!`]
+
+<script setup>
+import {ref, onMounted} from 'vue'
+import {liveQuery} from 'dexie'
+import {useObservable} from '@vueuse/rxjs'
+import db from '/src/store/db.js'
+import SystemPrompt from '/system-prompt.txt?raw'
+
+/**
+ * Handle messages
+ */
+const messages = ref(useObservable(liveQuery(async () => {
+  const messages = await db.messages.toArray()
+  
+  // Add default system prompt if no messages
+  if (!messages.length) {
+    messages.unshift({
+      name: 'System',
+      text: [SystemPrompt]
+    })
   }
-])
+
+  return messages
+})))
+
 
 /**
  * Submit a message
@@ -43,4 +60,12 @@ function submit (ev) {
     input.value = ''
   }
 }
+
+/**
+ * Focus input on mount
+ */
+const $input = ref(null)
+onMounted(() => {
+  $input.value.focus()
+})
 </script>
