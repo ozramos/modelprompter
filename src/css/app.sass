@@ -1,3 +1,128 @@
-// app global css in Sass form
+@use "sass:map"
+
 html, body
   overflow: hidden
+
+.q-message-text-content
+  white-space: pre-wrap
+
+// Core
+a
+  color: $primary
+pre
+  overflow-x: auto
+b, strong
+  color: $teal
+
+h1, h2, h3, h4, h5, h6
+  &:first-child
+    margin-top: 0
+p > code
+  color: $red
+  font-weight: bold
+
+// Header
+.q-header
+  background: $dark
+  a
+    color: $primary
+
+// Messages
+.q-message-container
+  > div
+    display: block
+    width: 100%
+
+// Buttons
+.q-btn:not(.q-btn--flat)
+  background: $primary
+  color: $primary-fg
+.q-btn.bg-primary.text-white
+  color: $primary-fg !important
+.q-btn.bg-light
+  background: $light !important
+
+// Badges
+.q-badge
+  background: $white
+  color: $primary-fg
+
+// Fields
+.q-field--standard
+  .q-field__control:before
+    border-color: $teal
+  .q-field__control:hover:before
+    border-color: $teal
+
+.q-slider--dark
+  .q-slider__track
+    background: $red
+  .q-slider__selection
+    background: $teal
+
+// Cards
+.q-card.q-card--dark.q-dark
+  background: $dark
+
+  .q-card.q-card--dark.q-dark
+    background: lighten($dark, 16%)
+
+  .q-tab-panel
+    .q-card.q-card--dark.q-dark
+      background: lighten($dark, 8%)
+
+      .q-table__container
+        background: lighten($dark, 16%)
+
+.q-drawer
+  .q-card.q-card--dark.q-dark
+    background: lighten($dark, 8%)
+
+    .q-tab-panel
+      .q-card.q-card--dark.q-dark
+        background: lighten($dark, 16%)
+
+        .q-table__container
+          background: lighten($dark, 24%)
+
+// Steppers
+.q-stepper__dot
+  flex: none
+
+.q-stepper--dark.q-stepper--bordered, .q-stepper--dark .q-stepper__header--border
+  border-color: $light
+
+// Tabs
+.q-tabs__content
+  background: $dark
+.q-tab--active
+  color: $white
+.q-tab--inactive
+  color: $primary
+.q-tab-panel
+  background: $dark
+
+// cards on steppers
+.q-stepper__content, .q-tab-panel
+  .q-card.q-dark
+    background: lighten($dark, 7%)
+
+.q-stepper__tab
+  color: $yellow
+
+.q-stepper__tab--active
+  color: $white
+
+.q-focus-helper:first-child
+  display: none
+
+// Modals
+.q-dialog
+  .q-card.q-dark
+    background: lighten($dark, 8%)
+
+    .q-card
+      background: lighten($dark, 16%)
+
+      .q-card
+        background: lighten($dark, 24%)

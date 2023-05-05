@@ -70,4 +70,5 @@ first
 last
 bio
 photo
+channels
 ```

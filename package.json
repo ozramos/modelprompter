@@ -13,7 +13,10 @@
   },
   "dependencies": {
     "@quasar/extras": "^1.0.0",
+    "@vueuse/rxjs": "^10.1.2",
+    "dexie": "^3.2.3",
     "dotenv": "^16.0.3",
+    "langchain": "^0.0.69",
     "pug": "^3.0.2",
     "quasar": "^2.6.0",
     "vue": "^3.0.0",
@@ -22,7 +25,9 @@
   "devDependencies": {
     "@quasar/app-vite": "^1.0.0",
     "autoprefixer": "^10.4.2",
-    "postcss": "^8.4.14"
+    "postcss": "^8.4.14",
+    "vite-plugin-top-level-await": "^1.3.0",
+    "vite-plugin-wasm": "^3.2.2"
   },
   "engines": {
     "node": "^18 || ^16 || ^14.19",
