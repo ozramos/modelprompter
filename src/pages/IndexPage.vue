@@ -5,7 +5,12 @@ q-page(:style-fn='() => ({ height: "calc(100vh - 50px)" })')
   div.column(style='height: 100%;')
     // Chat area
     .col.q-pa-md(style='overflow: auto')
-      q-chat-message(v-for='message in messages' :key='message.text' :name='message.name' :text='message.text' :sent='message.sent' :received='message.sent')
+      q-chat-message(
+        v-for='message in messages'
+        :key='message.text'
+        :text='[message.text]'
+        :sent='message.sent'
+      )
     
     // Input field with submit button at bottom of view
     .col-auto.q-pa-md
@@ -22,13 +27,14 @@ q-page(:style-fn='() => ({ height: "calc(100vh - 50px)" })')
 import {ref, onMounted} from 'vue'
 import {liveQuery} from 'dexie'
 import {useObservable} from '@vueuse/rxjs'
-import {db, getMessagesWithSystemPrompt} from '/src/store/db.js'
+import store from '/src/store/db.js'
+import llm from '/src/langchain/openai.js'
 
 /**
  * Handle messages
  */
 const messages = ref(useObservable(liveQuery(async () => {
-  return await getMessagesWithSystemPrompt()
+  return await store.getMessagesWithSystemPrompt()
 })))
 
 
@@ -42,18 +48,28 @@ async function submit (ev) {
     // Remove last enter character
     input.value = input.value.replace(/\n/g, '')
     const message = {
-      user: 1,
-      text: [input.value],
+      name: 'User',
+      text: input.value,
       sent: true
     }
     
     // Add message to chat
     messages.value.push(message)
-    await db.messages.add(message)
-    
+    await store.db.messages.add(message)
+
     // Clear and focus input
     input.value = ''
     $input.value.focus()
+
+    // Transform messages to OpenAI format
+    const transformedMessages = llm.transformMessages(messages.value)
+    const response = await llm.call(transformedMessages)
+
+    // Add response to chat
+    response.name = message.name
+    response.sent = false
+    messages.value.push(response)
+    await store.db.messages.add(response)
   }
 }
 
@@ -61,7 +77,7 @@ async function submit (ev) {
  * Clears the chat
  */
 async function clear () {
-  await db.messages.clear()
+  await store.db.messages.clear()
   input.value = ''
   $input.value.focus()
 }
