@@ -9,7 +9,7 @@ q-layout(view='lHh Lpr lFf')
   q-drawer.flex.column(v-model='isMainSidebarOpen' show-if-above bordered)
     q-list.flex.column.full-height
       q-item-label(header)
-        | Channel
+        | Channels
       
       // Links
       q-item(v-for='server in servers' :key='server.title' v-bind='server' clickable :to='server.link')
@@ -23,7 +23,7 @@ q-layout(view='lHh Lpr lFf')
       q-space
       q-list.q-pb-sm(dense)
         q-item
-          q-btn.full-width New channel
+          NewChannel
   q-page-container
     router-view
 </template>
@@ -31,6 +31,7 @@ q-layout(view='lHh Lpr lFf')
 <script setup>
 import {ref} from 'vue'
 import pkg from '/package.json'
+import NewChannel from '/src/components/NewChannel.vue'
 
 const $pkg = pkg
 const servers = [

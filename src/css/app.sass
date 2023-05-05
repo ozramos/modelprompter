@@ -25,6 +25,12 @@ p > code
 .q-page.boxed
   max-width: 1200px
   margin: auto
+.flex-unset
+  flex: unset !important
+.flex-auto
+  flex: auto !important
+.align-stretch
+  align-items: stretch !important
 
 // Header
 .q-header
@@ -46,6 +52,8 @@ p > code
   color: $primary-fg !important
 .q-btn.bg-light
   background: $light !important
+.q-btn__content i.q-icon:first-child
+  margin-right: 0.5em
 
 // Badges
 .q-badge
@@ -64,6 +72,9 @@ p > code
     background: $red
   .q-slider__selection
     background: $teal
+
+.q-textarea.full-height > div > div
+  height: 100%
 
 // Cards
 .q-card.q-card--dark.q-dark
@@ -125,9 +136,15 @@ p > code
 .q-dialog
   .q-card.q-dark
     background: lighten($dark, 8%)
-
     .q-card
       background: lighten($dark, 16%)
-
       .q-card
         background: lighten($dark, 24%)
+
+  &.fullscreen
+    .q-dialog__inner
+      padding: 4em
+    .q-dialog__inner, .q-dialog__inner > .q-card
+      max-width: 100% !important
+      height: 100%
+      width: 100%
