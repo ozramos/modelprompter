@@ -19,11 +19,18 @@ class Store {
     if (!messages.length) {
       messages = await this.db.messages.add({
         name: 'System',
-        text: SystemPrompt
+        text: SystemPrompt,
       })
     }
 
     return messages
+  }
+
+  /**
+   * Get Channels
+   */
+  async getChannels () {
+    return await this.db.channels.toArray()
   }
 }
 const store = new Store()
@@ -33,8 +40,7 @@ const store = new Store()
  */
 export default store
 store.db.version(1).stores({
-  servers: '++id, name',
-  channels: '++id, server, name',
+  channels: '++id, name',
   messages: '++id, channel, timestamp, from, to, message',
   users: '++id, timestamp, first, last, bio, photo, channels'
 })

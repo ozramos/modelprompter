@@ -31,9 +31,9 @@ q-page.boxed(:style-fn='() => ({ height: "calc(100vh - 50px)" })')
 
 
 <script setup>
-import {ref, onMounted, computed} from 'vue'
-import {liveQuery} from 'dexie'
+import {ref, onMounted} from 'vue'
 import {useObservable} from '@vueuse/rxjs'
+import {liveQuery} from 'dexie'
 import store from '/src/store/db.js'
 import llm from '/src/langchain/openai.js'
 
