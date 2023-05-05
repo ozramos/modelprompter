@@ -10,13 +10,17 @@ q-page(:style-fn='() => ({ height: "calc(100vh - 50px)" })')
         :key='message.text'
         :text='[message.text]'
         :sent='message.sent'
+        :bg-color='message.sent ? "primary" : (message.waiting ? "warning" : "secondary")'
+        :text-color='!message.waiting ? "white" : "black"'
       )
+        q-spinner-dots(v-if='message.waiting')
+        span(v-else) {{ message.text }}
     
     // Input field with submit button at bottom of view
     .col-auto.q-pa-md
       q-input(ref='$input' v-model='input' @keyup.enter='submit' autogrow dense style="max-height: 350px; overflow: auto")
         template(v-slot:prepend)
-            q-btn.q-mr-sm(color='negative' label='Clear chat' @click='clear')
+          q-btn.q-mr-sm(color='negative' label='Clear chat' @click='clear')
         template(v-slot:append)
           q-btn.q-ml-sm(color='primary' label='Send' @click='submit')
 </template>
@@ -24,7 +28,7 @@ q-page(:style-fn='() => ({ height: "calc(100vh - 50px)" })')
 
 
 <script setup>
-import {ref, onMounted} from 'vue'
+import {ref, onMounted, nextTick} from 'vue'
 import {liveQuery} from 'dexie'
 import {useObservable} from '@vueuse/rxjs'
 import store from '/src/store/db.js'
@@ -43,8 +47,8 @@ const messages = ref(useObservable(liveQuery(async () => {
  */
 const input = ref('')
 async function submit (ev) {
-  // Submit if not holding down CTRL
-  if (!ev.ctrlKey) {
+  // Submit if not holding down CTRL or SHIFT
+  if (!ev.ctrlKey && !ev.shiftKey) {
     // Remove last enter character
     input.value = input.value.replace(/\n/g, '')
     const message = {
@@ -54,22 +58,22 @@ async function submit (ev) {
     }
     
     // Add message to chat
-    messages.value.push(message)
-    await store.db.messages.add(message)
-
-    // Clear and focus input
-    input.value = ''
-    $input.value.focus()
-
-    // Transform messages to OpenAI format
-    const transformedMessages = llm.transformMessages(messages.value)
-    const response = await llm.call(transformedMessages)
-
-    // Add response to chat
-    response.name = message.name
-    response.sent = false
-    messages.value.push(response)
-    await store.db.messages.add(response)
+    // messages.value.push({waiting: true})
+    await store.db.messages.bulkAdd([message, {waiting: true}]).then(async key => {
+      // Clear and focus input
+      input.value = ''
+      $input.value.focus()
+  
+      // Transform messages to OpenAI format
+      const transformedMessages = llm.transformMessages(messages.value)
+      const response = await llm.call(transformedMessages)
+  
+      // Add response to chat
+      response.name = message.name
+      response.sent = false
+      await store.db.messages.delete(key)
+      await store.db.messages.add(response)
+    })
   }
 }
 
