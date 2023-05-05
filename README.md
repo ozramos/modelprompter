@@ -1,6 +1,12 @@
 # TensorBuddy
 
-Turn your desktop folders into unstructured databases and simulate entire communities of expert and autonomous AIs around them
+A LangChain/autoGPT powered Ai playground that runs on the desktop and web
+
+---
+
+## Features
+### Chat
+<img width="658" alt="image" src="https://user-images.githubusercontent.com/69949201/236559884-6fa4ac20-748f-40db-9994-4d7f4dacbd01.png">
 
 <br>
 <br>
