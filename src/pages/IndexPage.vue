@@ -10,8 +10,10 @@ q-page(:style-fn='() => ({ height: "calc(100vh - 50px)" })')
     // Input field with submit button at bottom of view
     .col-auto.q-pa-md
       q-input(ref='$input' v-model='input' @keyup.enter='submit' autogrow dense style="max-height: 350px; overflow: auto")
+        template(v-slot:prepend)
+            q-btn.q-mr-sm(color='negative' label='Clear chat' @click='clear')
         template(v-slot:append)
-          q-btn(color='primary' label='Send' @click='submit')
+          q-btn.q-ml-sm(color='primary' label='Send' @click='submit')
 </template>
 
 
@@ -20,25 +22,13 @@ q-page(:style-fn='() => ({ height: "calc(100vh - 50px)" })')
 import {ref, onMounted} from 'vue'
 import {liveQuery} from 'dexie'
 import {useObservable} from '@vueuse/rxjs'
-import db from '/src/store/db.js'
-import SystemPrompt from '/system-prompt.txt?raw'
+import {db, getMessagesWithSystemPrompt} from '/src/store/db.js'
 
 /**
  * Handle messages
  */
 const messages = ref(useObservable(liveQuery(async () => {
-  const messages = await db.messages.toArray()
-  
-  // Add default system prompt if no messages
-  if (!messages.length) {
-    const message = {
-      name: 'System',
-      text: [SystemPrompt]
-    }
-    messages.add(message)
-  }
-
-  return messages
+  return await getMessagesWithSystemPrompt()
 })))
 
 
@@ -46,7 +36,7 @@ const messages = ref(useObservable(liveQuery(async () => {
  * Submit a message
  */
 const input = ref('')
-function submit (ev) {
+async function submit (ev) {
   // Submit if not holding down CTRL
   if (!ev.ctrlKey) {
     // Remove last enter character
@@ -59,11 +49,21 @@ function submit (ev) {
     
     // Add message to chat
     messages.value.push(message)
-    db.messages.add(message)
+    await db.messages.add(message)
     
-    // Clear input
+    // Clear and focus input
     input.value = ''
+    $input.value.focus()
   }
+}
+
+/**
+ * Clears the chat
+ */
+async function clear () {
+  await db.messages.clear()
+  input.value = ''
+  $input.value.focus()
 }
 
 /**

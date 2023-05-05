@@ -5,8 +5,7 @@ import SystemPrompt from '/system-prompt.txt?raw'
 /**
  * Export db
  */
-const db = new Dexie('chat')
-export default db
+export const db = new Dexie('chat')
 db.version(1).stores({
   servers: '++id, name',
   channels: '++id, server, name',
@@ -15,17 +14,22 @@ db.version(1).stores({
 })
 
 /**
- * Initialize for the first time
+ * Get all messages
+ * - If there are none, a system prompt is returned
  */
-async function init () {
-  const messages = await db.messages.toArray()
+export async function getMessagesWithSystemPrompt (messages = []) {
+  if (!messages?.length) {
+    messages = await db.messages.toArray()
+  }
 
   // Add default system prompt if no messages
   if (!messages.length) {
-    db.messages.add({
+    messages = await db.messages.add({
       name: 'System',
       text: [SystemPrompt]
     })
   }  
+
+  return messages
 }
-init()
+getMessagesWithSystemPrompt()
