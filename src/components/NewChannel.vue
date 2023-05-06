@@ -19,7 +19,7 @@ q-btn.full-width.q-pl-sm(type='a' icon='chat' @click='showModal') New Channel
 
 
 <script setup>
-import { ref, watch } from 'vue'
+import { ref } from 'vue'
 const isDialogVisible = ref(false)
 const channelName = ref('Untitled')
 const prompt = ref('')
@@ -40,18 +40,15 @@ function hideModal () {
  */
 async function createChannel () {
   // Create the channel
-  const channelID = await store.createChannel({
+  const channel = await store.createChannel({
     name: channelName.value,
     prompt: prompt.value,
-    created: new Date(),
-    updated: new Date()
   })
 
   // Add the prime directive
   await store.createMessage({
     name: 'System',
-    channel: channelID,
-    date: new Date(),
+    channel: channel.id,
     text: prompt.value,
   })
   hideModal()

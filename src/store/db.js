@@ -38,7 +38,7 @@ class Store {
   async createMessage (message = {}) {
     message.name = message.name || 'System'
     message.channel = message.channel || 0
-    message.date = message.date || new Date()
+    message.created = message.date || new Date()
     message.updated = message.updated || new Date()
     message.text = message.text || SystemPrompt
     message.sent = message.sent || false
@@ -55,7 +55,8 @@ class Store {
     channel.created = channel.created || new Date()
     channel.updated = channel.updated || new Date()
 
-    return await this.db.channels.add(channel)
+    const channelID = await this.db.channels.add(channel)
+    return await this.db.channels.get(channelID)
   }
 }
 const store = new Store()

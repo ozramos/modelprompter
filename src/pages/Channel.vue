@@ -20,25 +20,42 @@ q-page.boxed(:style-fn='() => ({ height: "calc(100vh - 50px)" })')
         q-spinner-dots(size='2rem')
     
     // Input field with submit button at bottom of view
-    .col-auto.q-pa-md
-      q-input(ref='$input' v-model='input' @keyup.enter='submit' autogrow dense style="max-height: 350px; overflow: auto")
-        template(v-slot:prepend)
-          q-btn.q-mr-sm(color='negative' label='Clear chat' @click='clear')
-        template(v-slot:append)
-          q-btn.q-ml-sm(color='primary' label='Send' @click='submit')
+    .q-pa-md.flex.full-width
+      q-btn.q-mr-sm(color='negative' label='Clear chat' @click='clear')
+      q-input.flex-auto(ref='$input' v-model='input' @keyup.enter='submit' autogrow dense style="max-height: 350px; overflow: auto")
+      q-btn.q-ml-sm(color='primary' label='Send' @click='submit')
 </template>
 
 
 
 <script setup>
-import {ref, onMounted} from 'vue'
+import {ref, onMounted, watch} from 'vue'
 import {useObservable} from '@vueuse/rxjs'
 import {liveQuery} from 'dexie'
 import store from '/src/store/db.js'
 import llm from '/src/langchain/openai.js'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 
+/**
+ * Handle messages
+ */
+let isThinking = ref(false)
+const messages = ref(useObservable(liveQuery(async () => {
+  return await store.getMessagesWithSystemPrompt(getChannelID())
+})))
+
+
+/**
+ * Reload messages on router change
+ */
 const $router = useRouter()
+const $route = useRoute()
+watch(() => $route.params.id, async (newId) => {
+  messages.value = await store.getMessagesWithSystemPrompt(newId)
+})
+onMounted(async () => {
+  messages.value = await store.getMessagesWithSystemPrompt(getChannelID())
+})
 
 /**
  * Format date to YYYY-MM-DD HH:MM
@@ -58,14 +75,6 @@ function formatDate (date) {
 function getChannelID () {
   return $router.currentRoute.value.params.id || 0
 }
-
-/**
- * Handle messages
- */
-let isThinking = ref(false)
-const messages = ref(useObservable(liveQuery(async () => {
-  return await store.getMessagesWithSystemPrompt(getChannelID())
-})))
 
 /**
  * Submit a message
@@ -99,7 +108,7 @@ async function submit (ev) {
     response.name = message.name
     response.sent = false
     response.channel = getChannelID()
-    await store.createMessage(response)
+    messages.value.push(await store.createMessage(response))
     isThinking.value = false
   }
 }
