@@ -1,4 +1,4 @@
-# TensorBuddy
+# ModelPrompter
 
 A LangChain/autoGPT powered Ai playground that runs on the desktop and web
 
@@ -25,8 +25,8 @@ A LangChain/autoGPT powered Ai playground that runs on the desktop and web
 ### 1. Install dependencies
 ```bash
 # Clone repo locally
-git clone https://github.com/ozramos/tensorbuddy
-cd tensorbuddy
+git clone https://github.com/ozramos/modelprompter
+cd modelprompter
 
 # Install dependencies
 npm i
@@ -51,7 +51,12 @@ npm run build
 ```
 
 
-# Database
+# Troubleshooting
+
+
+# Database Schema
+The core database is currently powered by IndexedDB via [Dexie.js](https://dexie.org/):
+
 ```bash
 # SERVER
 id

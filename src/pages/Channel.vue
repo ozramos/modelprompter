@@ -11,7 +11,7 @@ q-page.boxed(:style-fn='() => ({ height: "calc(100vh - 50px)" })')
         :text='[message.text]'
         :bg-color='getChatBg(message)'
         :text-color='message.sent ? "white" : "black"'
-        :stamp='formatDate(message.date)'
+        :stamp='formatDate(message.updated)'
         :sent='message.name === "System"'
       )
       q-chat-message(
@@ -122,7 +122,7 @@ async function submit (ev) {
  * Clears the chat
  */
 async function clear () {
-  await store.db.messages.clear()
+  await store.db.messages.where('channel').equals(getChannelID()).clear()
   input.value = ''
   $input.value.focus()
 }

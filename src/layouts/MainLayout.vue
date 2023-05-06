@@ -3,7 +3,7 @@ q-layout(view='lHh Lpr lFf')
   q-header
     q-toolbar
       q-btn(flat dense round icon='menu' aria-label='Menu' @click='toggleMainSidebar')
-      q-toolbar-title TensorBuddy
+      q-toolbar-title ModelPrompter
       div v{{ $pkg.version }}
   q-drawer.flex.column(v-model='isMainSidebarOpen' show-if-above bordered)
     q-list.flex.column.full-height
