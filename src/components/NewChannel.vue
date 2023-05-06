@@ -20,10 +20,13 @@ q-btn.full-width.q-pl-sm(type='a' icon='chat' @click='showModal') New Channel
 
 <script setup>
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 const isDialogVisible = ref(false)
 const channelName = ref('Untitled')
 const prompt = ref('')
 import store from '/src/store/db.js'
+
+const $router = useRouter()
 
 /**
  * Shows the modal and clears the file
@@ -46,11 +49,14 @@ async function createChannel () {
   })
 
   // Add the prime directive
-  await store.createMessage({
+  const message = await store.createMessage({
     name: 'System',
     channel: channel.id,
     text: prompt.value,
   })
+
+  // Navigate to the channel
   hideModal()
+  $router.push({ name: 'channel', params: { id: channel.id } })
 }
 </script>

@@ -55,6 +55,12 @@ watch(() => $route.params.id, async (newId) => {
 })
 onMounted(async () => {
   messages.value = await store.getMessagesWithSystemPrompt(getChannelID())
+
+  // Redirect to main channel if channel doesn't exist
+  if (getChannelID() && !messages.value.length) {
+    const channels = await store.db.channels.where('id').equals(getChannelID()).toArray()
+    $router.push({name: 'system', params: {id: 0}})
+  }
 })
 
 /**
