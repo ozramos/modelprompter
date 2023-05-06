@@ -37,7 +37,7 @@ class Store {
    */
   async createMessage (message = {}) {
     message.name = message.name || 'System'
-    message.channel = message.channel || 0
+    message.channel = Number(message.channel || 0)
     message.created = message.date || new Date()
     message.updated = message.updated || new Date()
     message.text = message.text || SystemPrompt

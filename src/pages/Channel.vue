@@ -9,9 +9,10 @@ q-page.boxed(:style-fn='() => ({ height: "calc(100vh - 50px)" })')
         v-for='message in messages'
         :key='message.text'
         :text='[message.text]'
-        :bg-color='message.sent ? "blue" : "primary"'
+        :bg-color='getChatBg(message)'
         :text-color='message.sent ? "white" : "black"'
         :stamp='formatDate(message.date)'
+        :sent='message.name === "System"'
       )
       q-chat-message(
         v-if='isThinking'
@@ -50,15 +51,14 @@ const messages = ref(useObservable(liveQuery(async () => {
  */
 const $router = useRouter()
 const $route = useRoute()
-watch(() => $route.params.id, async (newId) => {
-  messages.value = await store.getMessagesWithSystemPrompt(newId)
+watch(() => $route.params.id, async (newId = 0) => {
+  messages.value = await store.getMessagesWithSystemPrompt(Number(newId))
 })
 onMounted(async () => {
   messages.value = await store.getMessagesWithSystemPrompt(getChannelID())
 
   // Redirect to main channel if channel doesn't exist
   if (getChannelID() && !messages.value.length) {
-    const channels = await store.db.channels.where('id').equals(getChannelID()).toArray()
     $router.push({name: 'system', params: {id: 0}})
   }
 })
@@ -79,7 +79,7 @@ function formatDate (date) {
 
 // Computed channel ID (when route changes)
 function getChannelID () {
-  return $router.currentRoute.value.params.id || 0
+  return Number($router.currentRoute.value.params.id || 0)
 }
 
 /**
@@ -95,7 +95,6 @@ async function submit (ev) {
     const message = await store.createMessage({
       name: 'User',
       text: input.value,
-      date: new Date(),
       channel: getChannelID(),
       sent: true
     })
@@ -111,9 +110,9 @@ async function submit (ev) {
     const response = await llm.call(transformedMessages)
 
     // Add response to chat
-    response.name = message.name
+    response.name = 'Agent'
     response.sent = false
-    response.channel = getChannelID()
+    response.channel = message.channel
     messages.value.push(await store.createMessage(response))
     isThinking.value = false
   }
@@ -126,6 +125,25 @@ async function clear () {
   await store.db.messages.clear()
   input.value = ''
   $input.value.focus()
+}
+
+/**
+ * Get chat background color
+ */
+function getChatBg (msg) {
+  let bg = 'black'
+  switch (msg.name) {
+    case 'System':
+      bg = 'success'
+      break
+    case 'Agent':
+      bg = 'primary'
+      break
+    case 'User':
+      bg = 'blue'
+      break
+  }
+  return bg
 }
 
 /**
