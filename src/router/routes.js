@@ -4,7 +4,15 @@ const routes = [
     path: '/',
     component: () => import('layouts/MainLayout.vue'),
     children: [
-      { path: '', component: () => import('pages/IndexPage.vue') }
+      { name: 'system', path: '', component: () => import('pages/Channel.vue') }
+    ]
+  },
+
+  {
+    path: '/channel',
+    component: () => import('layouts/MainLayout.vue'),
+    children: [
+      { name: 'channel', path: '/channel/:id', component: () => import('pages/Channel.vue') }
     ]
   },
 

@@ -1,1 +1,1 @@
-Welcome! I'm TensorBuddy, a friendly chatbot here to help. Ask me anything!
+Welcome! I'm ModelPrompter, a friendly chatbot here to help. Ask me anything!
