@@ -39,13 +39,21 @@ function hideModal () {
  * Create a new channel
  */
 async function createChannel () {
-  await store.db.channels.add({
+  // Create the channel
+  const channelID = await store.createChannel({
     name: channelName.value,
     prompt: prompt.value,
     created: new Date(),
     updated: new Date()
   })
 
+  // Add the prime directive
+  await store.createMessage({
+    name: 'System',
+    channel: channelID,
+    date: new Date(),
+    text: prompt.value,
+  })
   hideModal()
 }
 </script>

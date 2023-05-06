@@ -74,33 +74,32 @@ const input = ref('')
 async function submit (ev) {
   // Submit if not holding down CTRL or SHIFT
   if (!ev.ctrlKey && !ev.shiftKey) {
-    // Remove last enter character
+    // Create the message
+    // Remove last newline
     input.value = input.value.replace(/\n/g, '')
-    const message = {
+    const message = await store.createMessage({
       name: 'User',
       text: input.value,
       date: new Date(),
       channel: getChannelID(),
       sent: true
-    }
+    })
+    messages.value.push(message)
     
     // Add message to chat
     input.value = ''
     $input.value.focus()
     isThinking.value = true
-    messages.value.push(message)
-    await store.db.messages.add(message)
 
     // Transform messages to OpenAI format
     const transformedMessages = llm.transformMessages(messages.value)
     const response = await llm.call(transformedMessages)
 
     // Add response to chat
-    response.date = new Date()
     response.name = message.name
     response.sent = false
     response.channel = getChannelID()
-    await store.db.messages.add(response)
+    await store.createMessage(response)
     isThinking.value = false
   }
 }
