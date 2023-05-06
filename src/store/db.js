@@ -10,15 +10,16 @@ class Store {
    * Get all messages
    * - If there are none, a system prompt is returned
    */
-  async getMessagesWithSystemPrompt (messages = []) {
-    if (!messages?.length) {
-      messages = await this.db.messages.toArray()
-    }
-  
+  async getMessagesWithSystemPrompt (id = 0) {
+    let messages = []
+    messages = await this.db.messages.where('channel').equals(id).toArray()
+    
     // Add default system prompt if no messages
-    if (!messages.length) {
-      messages = await this.db.messages.add({
+    if (!id && !messages.length) {
+      await this.db.messages.add({
         name: 'System',
+        channel: 0,
+        date: new Date(),
         text: SystemPrompt,
       })
     }

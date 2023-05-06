@@ -36,6 +36,9 @@ import {useObservable} from '@vueuse/rxjs'
 import {liveQuery} from 'dexie'
 import store from '/src/store/db.js'
 import llm from '/src/langchain/openai.js'
+import { useRouter } from 'vue-router'
+
+const $router = useRouter()
 
 /**
  * Format date to YYYY-MM-DD HH:MM
@@ -51,13 +54,17 @@ function formatDate (date) {
   return `${year}-${month}-${day} ${hours}:${minutes}`
 }
 
+// Computed channel ID (when route changes)
+function getChannelID () {
+  return $router.currentRoute.value.params.id || 0
+}
 
 /**
  * Handle messages
  */
 let isThinking = ref(false)
 const messages = ref(useObservable(liveQuery(async () => {
-  return await store.getMessagesWithSystemPrompt()
+  return await store.getMessagesWithSystemPrompt(getChannelID())
 })))
 
 /**
@@ -73,6 +80,7 @@ async function submit (ev) {
       name: 'User',
       text: input.value,
       date: new Date(),
+      channel: getChannelID(),
       sent: true
     }
     
@@ -91,6 +99,7 @@ async function submit (ev) {
     response.date = new Date()
     response.name = message.name
     response.sent = false
+    response.channel = getChannelID()
     await store.db.messages.add(response)
     isThinking.value = false
   }
