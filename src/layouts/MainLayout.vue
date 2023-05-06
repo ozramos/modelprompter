@@ -17,10 +17,9 @@ q-layout(view='lHh Lpr lFf')
           q-icon(name='hive')
         q-item-section
           q-item-label System
-          //- q-item-label(caption)
       
       //- Links
-      q-item(v-for='channel in channels' :key='channel.id' v-bind='channel' clickable :to='"/"+channel.id')
+      q-item(v-for='channel in channels' :key='channel.id' v-bind='channel' clickable :to='{ name: "channel", params: { id: channel.id } }')
         q-item-section(avatar)
           q-icon(v-if='channel.icon' :name='channel.icon')
           q-icon(v-else name='chat')
