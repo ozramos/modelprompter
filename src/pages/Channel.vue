@@ -24,6 +24,8 @@ q-page.boxed(:style-fn='() => ({ height: "calc(100vh - 50px)" })')
     .q-pa-md.flex.full-width
       q-fab.q-mr-sm.notext(square direction='up' color='blue' icon='settings')
         q-fab-action(color='red' icon='delete' @click='clear')
+        q-fab-action(v-if='isChatModeOn' color='primary' icon='group' @click='isChatModeOn = false')
+        q-fab-action(v-else color='primary' icon='group_off' @click='isChatModeOn = true')
 
       q-input.flex-auto(ref='$input' v-model='input' @keyup.enter='submit' autogrow dense style="max-height: 350px; overflow: auto")
       q-btn.q-ml-sm(color='primary' label='Send' @click='submit')
@@ -88,6 +90,7 @@ function getChannelID () {
  * Submit a message
  */
 const input = ref('')
+const isChatModeOn = ref(false)
 async function submit (ev) {
   // Submit if not holding down CTRL or SHIFT
   if (!ev.ctrlKey && !ev.shiftKey) {
@@ -105,18 +108,21 @@ async function submit (ev) {
     // Add message to chat
     input.value = ''
     $input.value.focus()
-    isThinking.value = true
 
-    // Transform messages to OpenAI format
-    const transformedMessages = llm.transformMessages(messages.value)
-    const response = await llm.call(transformedMessages)
-
-    // Add response to chat
-    response.name = 'Agent'
-    response.sent = false
-    response.channel = message.channel
-    messages.value.push(await store.createMessage(response))
-    isThinking.value = false
+    // If chat mode is on, send message to AI
+    if (isChatModeOn.value) {
+      // Transform messages to OpenAI format
+      isThinking.value = true
+      const transformedMessages = llm.transformMessages(messages.value)
+      const response = await llm.call(transformedMessages)
+  
+      // Add response to chat
+      response.name = 'Agent'
+      response.sent = false
+      response.channel = message.channel
+      messages.value.push(await store.createMessage(response))
+      isThinking.value = false
+    }
   }
 }
 
