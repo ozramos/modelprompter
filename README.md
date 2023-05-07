@@ -1,12 +1,39 @@
 # ModelPrompter
 
-A LangChain/autoGPT powered Ai playground that runs on the desktop and web
+A moddable LangChain/autoGPT powered Ai "everything app"
 
 ---
 
 ## Features
-### Chat
-<img width="658" alt="image" src="https://user-images.githubusercontent.com/69949201/236559884-6fa4ac20-748f-40db-9994-4d7f4dacbd01.png">
+<table>
+  <tr>
+    <td>Now</td>
+    <td>Soon</td>
+  </tr>
+  <tr>
+    <td>
+      <ul>
+        <li>Serverless, static site with longterm local storage (IndexedDB via Dexie.js)</li>
+        <li>ChatGPT like prompting with Quasar Framework Vue.js frontend (requires OpenAPI Key, other options soon)</li>
+        <li>A lot of bugs 🐞</li>
+      </ul>
+    </td>
+    <td>
+      <ul>
+      <li>Show messages as markdown
+      <li>API and auto gpt designer
+      <li>Browser extension
+      <li>Optional cloud and local storage and sync
+      <li>Export to native apps (desktop, mobile, browser extensions)
+      <li>Encryption
+      <li>a lot more 🚀
+      </ul>
+    </td>
+  </tr>
+</table>
+
+
+<img width="925" alt="image" src="https://user-images.githubusercontent.com/69949201/236665885-310b02d8-0556-409c-8be0-425b888189a4.png">
 
 <br>
 <br>
