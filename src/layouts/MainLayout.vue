@@ -3,8 +3,12 @@ q-layout(view='lHh Lpr lFf')
   q-header
     q-toolbar
       q-btn(flat dense round icon='menu' aria-label='Menu' @click='toggleMainSidebar')
-      q-toolbar-title ModelPrompter
-      div v{{ $pkg.version }}
+      q-toolbar-title
+        router-link.text-decoration-none.text-white(to='/')
+          img.lt-md.q-mr-sm(src='/logo-title-small.png' height=32 style='vertical-align: middle')
+          img.gt-sm.q-mr-sm(src='/logo-title.png' height=32 style='vertical-align: middle')
+        a(href='https://github.com/modelprompter/modelprompter/releases' target='_blank')
+          small.q-ml-sm(style='font-size: .65em; display: inline-block; transform: translate(0, -3px)') {{$pkg.version}}
   q-drawer.flex.column(v-model='isMainSidebarOpen' show-if-above bordered)
     q-list.flex.column.full-height
       q-item-label(header)

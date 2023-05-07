@@ -66,6 +66,7 @@ name
 id
 name
 server
+prompt
 
 # MESSAGE
 id
