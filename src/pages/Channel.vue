@@ -127,6 +127,7 @@ async function clear () {
   await store.db.messages.where('channel').equals(getChannelID()).delete()
   input.value = ''
   $input.value.focus()
+  messages.value = await store.getMessagesWithSystemPrompt(getChannelID())
 }
 
 /**

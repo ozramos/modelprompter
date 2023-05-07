@@ -17,8 +17,11 @@ class Store {
     // Add default system prompt on first load
     // @fixme this looks like the wrong place for this
     if (!id && !messages.length) {
-      await this.createMessage()
-      messages = await this.db.messages.where('channel').equals(id).toArray()
+      messages = [await this.createMessage()]
+    } else if (!messages.length) {
+      // Get the channels system prompt
+      const channel = await this.db.channels.get(id)
+      messages = [await this.createMessage({ channel: id, text: channel.prompt })]
     }
 
     return messages
