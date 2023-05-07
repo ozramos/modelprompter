@@ -22,8 +22,9 @@ q-page.boxed(:style-fn='() => ({ height: "calc(100vh - 50px)" })')
     
     // Input field with submit button at bottom of view
     .q-pa-md.flex.full-width
-      //- q-btn.q-mr-sm(color='secondary' text-color="black" label='Clear chat' @click='clear')
-      q-btn.q-mr-sm(color='secondary' text-color="dark" label='setup' @click='clear')
+      q-fab.q-mr-sm.notext(square direction='up' color='blue' icon='settings')
+        q-fab-action(color='red' icon='delete' @click='clear')
+
       q-input.flex-auto(ref='$input' v-model='input' @keyup.enter='submit' autogrow dense style="max-height: 350px; overflow: auto")
       q-btn.q-ml-sm(color='primary' label='Send' @click='submit')
 </template>
