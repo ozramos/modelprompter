@@ -7,8 +7,9 @@ q-page.boxed(:style-fn='() => ({ height: "calc(100vh - 50px)" })')
     .col.q-pa-md(style='overflow: auto')
       q-chat-message(
         v-for='message in messages'
-        :key='message.text'
-        :text='[message.text]'
+        :key='message.id'
+        :text-html='true'
+        :text='[formattedMessage[message.id]]'
         :bg-color='getChatBg(message)'
         :text-color='message.sent ? "white" : "black"'
         :stamp='formatDate(message.updated)'
@@ -34,13 +35,14 @@ q-page.boxed(:style-fn='() => ({ height: "calc(100vh - 50px)" })')
 
 
 <script setup>
-import {ref, onMounted, watch} from 'vue'
+import {ref, onMounted, watch, computed} from 'vue'
 import {useObservable} from '@vueuse/rxjs'
 import {liveQuery} from 'dexie'
 import store from '/src/store/db.js'
 import llm from '/src/langchain/openai.js'
 import { useRouter, useRoute } from 'vue-router'
 import {useQuasar} from 'quasar'
+import marked from '/src/boot/marked.js'
 
 const $q = useQuasar()
 
@@ -165,5 +167,15 @@ function getChatBg (msg) {
 const $input = ref(null)
 onMounted(() => {
   $input.value.focus()
+})
+
+/**
+ * Apply markdown
+ */
+const formattedMessage = computed(() => {
+  return messages.value.reduce((msg, item) => {
+    msg[item.id] = marked.parse(item.text)
+    return msg
+  }, {})
 })
 </script>
