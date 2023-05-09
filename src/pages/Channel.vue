@@ -24,7 +24,7 @@ q-page.boxed(:style-fn='() => ({ height: "calc(100vh - 50px)" })')
     // Input field with submit button at bottom of view
     .q-pa-md.flex.full-width
       q-fab.q-mr-sm.notext(square direction='up' color='blue' icon='settings' persistent)
-        q-fab-action(color='red' icon='delete' @click='clear' label='delete' external-label)
+        q-fab-action(color='red' icon='delete' @click='clear' label='Clear messages' external-label)
         q-fab-action(v-if='isChatModeOn' color='white' text-color='black' icon='group' @click='isChatModeOn = false; $q.notify("Chat disabled")' external-label label='Chat mode enabled')
         q-fab-action(v-else color='blue' icon='group_off' @click='isChatModeOn = true; $q.notify("Chat enabled")' external-label label='Chat mode disabled')
 

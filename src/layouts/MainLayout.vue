@@ -8,7 +8,7 @@ q-layout(view='lHh Lpr lFf')
           img.lt-md.q-mr-sm(src='/logo-title-small.png' height=32 style='vertical-align: middle')
           img.gt-sm.q-mr-sm(src='/logo-title.png' height=32 style='vertical-align: middle')
         a(href='https://github.com/modelprompter/modelprompter/releases' target='_blank')
-          small.q-ml-sm(style='font-size: .65em; display: inline-block; transform: translate(0, -3px)') {{$pkg.version}}
+          small.q-ml-sm(style='font-size: .65em; display: inline-block; transform: translate(0, -3px)') {{pkg.version}}
   q-drawer.flex.column(v-model='isMainSidebarOpen' show-if-above bordered)
     q-list.flex.column.full-height
       q-item-label(header)
@@ -22,13 +22,16 @@ q-layout(view='lHh Lpr lFf')
           q-item-label System
       
       //- Links
-      q-item(v-for='channel in channels' :key='channel.id' v-bind='channel' clickable :to='{ name: "channel", params: { id: channel.id } }')
+      q-item.channel-menu-item(v-for='channel in channels' :key='channel.id' v-bind='channel' clickable :to='{ name: "channel", params: { id: channel.id } }')
         q-item-section(avatar)
           q-icon(v-if='channel.icon' :name='channel.icon')
           q-icon(v-else name='chat')
         q-item-section
           q-item-label {{ channel.name }}
           q-item-label(v-if='channel.caption' caption) {{ channel.caption }}
+        q-item-section
+          q-btn(rel='edit' flat dense round icon='edit' aria-label='Edit' @click='ev => editChannel(ev, channel)')
+          q-btn(rel='delete' flat dense round icon='delete' aria-label='Delete' @click='ev => deleteChannel(ev, channel)')
       
       //- Add channel button at bottom of list
       q-space
@@ -47,7 +50,6 @@ import pkg from '/package.json'
 import store from '/src/store/db.js'
 import NewChannel from '/src/components/NewChannel.vue'
 
-const $pkg = pkg
 const channels = ref(useObservable(liveQuery(async () => {
   return await store.getChannels()
 })))
@@ -58,5 +60,25 @@ const channels = ref(useObservable(liveQuery(async () => {
 const isMainSidebarOpen = ref(false)
 function toggleMainSidebar () {
   isMainSidebarOpen.value = !isMainSidebarOpen.value
+}
+
+/**
+ * Edit channel
+ */
+function editChannel (ev, channel) {
+  console.log('editChannel', channel)
+  ev.preventDefault()
+  ev.stopPropagation()
+  return false
+}
+
+/**
+ * Delete channel
+ */
+function deleteChannel (ev, channel) {
+  console.log('deleteChannel', channel, arguments)
+  ev.preventDefault()
+  ev.stopPropagation()
+  return false
 }
 </script>

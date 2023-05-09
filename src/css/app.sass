@@ -183,3 +183,25 @@ iframe
       max-width: 100% !important
       height: 100%
       width: 100%
+
+
+// Sidebars
+.channel-menu-item
+  .q-item__section:last-child
+    display: none
+
+  &:hover
+    .q-item__section:last-child
+      display: flex
+      flex: auto
+      flex-direction: row
+      
+      .q-btn
+        min-height: auto
+      .q-btn[rel='delete']:hover
+        color: $negative
+      .q-btn[rel='edit']:hover
+        color: $teal
+      
+      i.q-icon:first-child
+        margin-right: 0
