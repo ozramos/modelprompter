@@ -43,6 +43,7 @@ import llm from '/src/langchain/openai.js'
 import { useRouter, useRoute } from 'vue-router'
 import {useQuasar} from 'quasar'
 import md from '/src/boot/markdown.js'
+import DOMPurify from 'dompurify'
 
 const $q = useQuasar()
 
@@ -95,7 +96,7 @@ function getChannelID () {
  * Submit a message
  */
 const input = ref('')
-const isChatModeOn = ref(false)
+const isChatModeOn = ref(true)
 async function submit (ev) {
   // Submit if not holding down CTRL or SHIFT
   if (!ev.ctrlKey && !ev.shiftKey) {
@@ -174,7 +175,7 @@ onMounted(() => {
  */
 const formattedMessage = computed(() => {
   return messages.value.reduce((msg, item) => {
-    msg[item.id] = md.render(item.text)
+    msg[item.id] = DOMPurify.sanitize(md.render(item.text), { ADD_TAGS: ['iframe'], ADD_ATTR: ['allow', 'allowfullscreen', 'frameborder', 'scrolling'] })
     return msg
   }, {})
 })

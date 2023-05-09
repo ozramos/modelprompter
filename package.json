@@ -15,6 +15,7 @@
     "@quasar/extras": "^1.0.0",
     "@vueuse/rxjs": "^10.1.2",
     "dexie": "^3.2.3",
+    "dompurify": "^3.0.3",
     "dotenv": "^16.0.3",
     "highlight.js": "^11.8.0",
     "langchain": "^0.0.69",
