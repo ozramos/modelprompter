@@ -88,7 +88,14 @@ module.exports = configure(function (/* ctx */) {
     framework: {
       config: {
         dark: true,
+        notify: {
+          color: 'green'
+        }
       },
+      // Quasar plugins
+      plugins: [
+        'Notify'
+      ],
 
       // iconSet: 'material-icons', // Quasar icon set
       // lang: 'en-US', // Quasar language pack
@@ -99,9 +106,6 @@ module.exports = configure(function (/* ctx */) {
       //
       // components: [],
       // directives: [],
-
-      // Quasar plugins
-      plugins: []
     },
 
     // animations: 'all', // --- includes all animations
