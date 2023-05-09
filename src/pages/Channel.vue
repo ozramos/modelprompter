@@ -4,7 +4,7 @@
 q-page.boxed(:style-fn='() => ({ height: "calc(100vh - 50px)" })')
   div.column(style='height: 100%;')
     // Chat area
-    .col.q-pa-md(style='overflow: auto')
+    .fancy-scrollbars.col.q-pa-md(style='overflow: auto')
       q-chat-message(
         v-for='message in messages'
         :key='message.id'
@@ -42,7 +42,7 @@ import store from '/src/store/db.js'
 import llm from '/src/langchain/openai.js'
 import { useRouter, useRoute } from 'vue-router'
 import {useQuasar} from 'quasar'
-import marked from '/src/boot/marked.js'
+import md from '/src/boot/markdown.js'
 
 const $q = useQuasar()
 
@@ -174,7 +174,7 @@ onMounted(() => {
  */
 const formattedMessage = computed(() => {
   return messages.value.reduce((msg, item) => {
-    msg[item.id] = marked.parse(item.text)
+    msg[item.id] = md.render(item.text)
     return msg
   }, {})
 })
