@@ -10,7 +10,7 @@ q-layout(view='lHh Lpr lFf')
         a(href='https://github.com/modelprompter/modelprompter/releases' target='_blank')
           small.q-ml-sm(style='font-size: .65em; display: inline-block; transform: translate(0, -3px)') {{pkg.version}}
   q-drawer.flex.column(v-model='isMainSidebarOpen' show-if-above bordered)
-    q-list.flex.column.full-height
+    q-list.flex.column.full-height.width-inherit
       q-item-label(header)
         | Channels
 
@@ -27,7 +27,7 @@ q-layout(view='lHh Lpr lFf')
           q-icon(v-if='channel.icon' :name='channel.icon')
           q-icon(v-else name='chat')
         q-item-section
-          q-item-label {{ channel.name }}
+          q-item-label(lines=1) {{ channel.name }}
           q-item-label(v-if='channel.caption' caption) {{ channel.caption }}
         q-item-section
           q-btn(rel='edit' flat dense round icon='edit' aria-label='Edit' @click='ev => editChannel(ev, channel)')
