@@ -61,6 +61,13 @@ class Store {
     const channelID = await this.db.channels.add(channel)
     return await this.db.channels.get(channelID)
   }
+
+  /**
+   * Delete channel
+   */
+  async deleteChannel (id) {
+    await this.db.channels.delete(id)
+  }
 }
 const store = new Store()
 

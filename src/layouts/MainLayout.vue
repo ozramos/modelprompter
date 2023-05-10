@@ -49,7 +49,11 @@ import {liveQuery} from 'dexie'
 import pkg from '/package.json'
 import store from '/src/store/db.js'
 import NewChannel from '/src/components/NewChannel.vue'
+import {useQuasar} from 'quasar'
+import {useRouter} from 'vue-router'
 
+const $q = useQuasar()
+const $router = useRouter()
 const channels = ref(useObservable(liveQuery(async () => {
   return await store.getChannels()
 })))
@@ -75,10 +79,16 @@ function editChannel (ev, channel) {
 /**
  * Delete channel
  */
-function deleteChannel (ev, channel) {
-  console.log('deleteChannel', channel, arguments)
+async function deleteChannel (ev, channel) {
+  await store.deleteChannel(channel.id)
+  $q.notify({
+    message: `Deleted channel ${channel.name}`,
+  })
+
   ev.preventDefault()
   ev.stopPropagation()
+
+  $router.push('/')
   return false
 }
 </script>
