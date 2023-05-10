@@ -4,11 +4,12 @@
 q-page.boxed(:style-fn='() => ({ height: "calc(100vh - 50px)" })')
   div.column(style='height: 100%;')
     // Chat area
-    .col.q-pa-md(style='overflow: auto')
+    .fancy-scrollbars.col.q-pa-md(style='overflow: auto')
       q-chat-message(
         v-for='message in messages'
-        :key='message.text'
-        :text='[message.text]'
+        :key='message.id'
+        :text-html='true'
+        :text='[formattedMessage[message.id]]'
         :bg-color='getChatBg(message)'
         :text-color='message.sent ? "white" : "black"'
         :stamp='formatDate(message.updated)'
@@ -23,7 +24,7 @@ q-page.boxed(:style-fn='() => ({ height: "calc(100vh - 50px)" })')
     // Input field with submit button at bottom of view
     .q-pa-md.flex.full-width
       q-fab.q-mr-sm.notext(square direction='up' color='blue' icon='settings' persistent)
-        q-fab-action(color='red' icon='delete' @click='clear' label='delete' external-label)
+        q-fab-action(color='red' icon='delete' @click='clear' label='Clear messages' external-label)
         q-fab-action(v-if='isChatModeOn' color='white' text-color='black' icon='group' @click='isChatModeOn = false; $q.notify("Chat disabled")' external-label label='Chat mode enabled')
         q-fab-action(v-else color='blue' icon='group_off' @click='isChatModeOn = true; $q.notify("Chat enabled")' external-label label='Chat mode disabled')
 
@@ -34,13 +35,15 @@ q-page.boxed(:style-fn='() => ({ height: "calc(100vh - 50px)" })')
 
 
 <script setup>
-import {ref, onMounted, watch} from 'vue'
+import {ref, onMounted, watch, computed} from 'vue'
 import {useObservable} from '@vueuse/rxjs'
 import {liveQuery} from 'dexie'
 import store from '/src/store/db.js'
 import llm from '/src/langchain/openai.js'
 import { useRouter, useRoute } from 'vue-router'
 import {useQuasar} from 'quasar'
+import md from '/src/boot/markdown.js'
+import DOMPurify from 'dompurify'
 
 const $q = useQuasar()
 
@@ -93,7 +96,7 @@ function getChannelID () {
  * Submit a message
  */
 const input = ref('')
-const isChatModeOn = ref(false)
+const isChatModeOn = ref(true)
 async function submit (ev) {
   // Submit if not holding down CTRL or SHIFT
   if (!ev.ctrlKey && !ev.shiftKey) {
@@ -165,5 +168,15 @@ function getChatBg (msg) {
 const $input = ref(null)
 onMounted(() => {
   $input.value.focus()
+})
+
+/**
+ * Apply markdown
+ */
+const formattedMessage = computed(() => {
+  return messages.value.reduce((msg, item) => {
+    msg[item.id] = DOMPurify.sanitize(md.render(item.text), { ADD_TAGS: ['iframe'], ADD_ATTR: ['allow', 'allowfullscreen', 'frameborder', 'scrolling'] })
+    return msg
+  }, {})
 })
 </script>
