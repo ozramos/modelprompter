@@ -1,5 +1,5 @@
 <template lang="pug">
-q-btn.full-width.q-pl-sm(type='a' icon='chat' @click='showModal()') New Channel
+q-btn.full-width.q-pl-sm(icon='chat' @click='showModal()') New Channel
   q-dialog.fullscreen(v-model='isDialogVisible')
     q-card.flex.column
       q-card-section.flex-unset
@@ -34,7 +34,7 @@ const $router = useRouter()
 let isEditing = ref(false)
 
 /**
- * Shows the modal and clears the file
+ * Shows the modal and clears the message
  * @channel {Channel} The channel to edit or null to create a new one
  */
 function showModal (channel = {}) {

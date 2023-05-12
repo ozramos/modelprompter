@@ -43,6 +43,8 @@ q-layout(view='lHh Lpr lFf')
     q-space
     q-list.q-pb-sm(dense)
       q-item
+        div.q-pr-sm
+          Settings
         NewChannel(ref='$newChannel')
   q-page-container
     router-view
@@ -55,6 +57,7 @@ import {liveQuery} from 'dexie'
 import pkg from '/package.json'
 import store from '/src/store/db.js'
 import NewChannel from '/src/components/NewChannel.vue'
+import Settings from '/src/components/Settings.vue'
 import {useQuasar} from 'quasar'
 import {useRouter} from 'vue-router'
 
