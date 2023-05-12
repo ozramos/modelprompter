@@ -1,5 +1,5 @@
 <template lang="pug">
-q-btn.full-width.q-pl-sm(type='a' icon='chat' @click='showModal') New Channel
+q-btn.full-width.q-pl-sm(type='a' icon='chat' @click='showModal()') New Channel
   q-dialog.fullscreen(v-model='isDialogVisible')
     q-card.flex.column
       q-card-section.flex-unset
@@ -13,27 +13,43 @@ q-btn.full-width.q-pl-sm(type='a' icon='chat' @click='showModal') New Channel
       q-card-actions.flex-unset(align='right')
         q-btn(flat @click='hideModal') Cancel
         q-space
-        q-btn(@click='createChannel') Create channel
+        q-btn(v-if='isEditing' @click='updateChannel') Update channel
+        q-btn(v-else @click='createChannel') Create channel
 </template>
-  
+
 
 
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import store from '/src/store/db.js'
+import {useQuasar} from 'quasar'
+
 const isDialogVisible = ref(false)
 const channelName = ref('Untitled')
 const prompt = ref('')
-import store from '/src/store/db.js'
+const $q = useQuasar()
 
 const $router = useRouter()
+let isEditing = ref(false)
 
 /**
  * Shows the modal and clears the file
+ * @channel {Channel} The channel to edit or null to create a new one
  */
-function showModal () {
+function showModal (channel = {}) {
   isDialogVisible.value = true
+  isEditing.value = channel.id || 0
+
+  if (channel.id) {
+    channelName.value = channel.name
+    prompt.value = channel.prompt
+  } else {
+    channelName.value = 'Untitled'
+    prompt.value = ''
+  }
 }
+
 function hideModal () {
   isDialogVisible.value = false
 }
@@ -57,6 +73,29 @@ async function createChannel () {
 
   // Navigate to the channel
   hideModal()
+  $q.notify({message: `Channel created`})
   $router.push({ name: 'channel', params: { id: channel.id } })
 }
+
+/**
+ * Update a channel
+ */
+async function updateChannel () {
+  // Update the channel
+  const channel = await store.updateChannel({
+    id: isEditing.value,
+    name: channelName.value,
+    prompt: prompt.value,
+  })
+
+  // Navigate to the channel
+  hideModal()
+  $q.notify({message: `Channel updated`})
+  $router.push({ name: 'channel', params: { id: channel.id } })
+}
+
+/**
+ * Defines
+ */
+defineExpose({showModal})
 </script>

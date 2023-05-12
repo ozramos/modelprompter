@@ -13,7 +13,7 @@ class Store {
   async getMessagesWithSystemPrompt (id = 0) {
     let messages = []
     messages = await this.db.messages.where('channel').equals(id).toArray()
-    
+
     // Add default system prompt on first load
     // @fixme this looks like the wrong place for this
     if (!id && !messages.length) {
@@ -60,6 +60,18 @@ class Store {
 
     const channelID = await this.db.channels.add(channel)
     return await this.db.channels.get(channelID)
+  }
+
+  /**
+   * Update Channel
+   */
+  async updateChannel (channel = {}) {
+    channel.name = channel.name || 'Untitled'
+    channel.prompt = channel.prompt || SystemPrompt
+    channel.updated = channel.updated || new Date()
+
+    await this.db.channels.update(channel.id, channel)
+    return await this.db.channels.get(channel.id)
   }
 
   /**

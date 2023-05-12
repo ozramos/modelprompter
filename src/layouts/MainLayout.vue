@@ -20,7 +20,7 @@ q-layout(view='lHh Lpr lFf')
           q-icon(name='hive')
         q-item-section
           q-item-label System
-      
+
       //- Links
       q-item.channel-menu-item(v-for='channel in channels' :key='channel.id' v-bind='channel' clickable :to='{ name: "channel", params: { id: channel.id } }')
         q-item-section(avatar)
@@ -32,12 +32,12 @@ q-layout(view='lHh Lpr lFf')
         q-item-section
           q-btn(rel='edit' flat dense round icon='edit' aria-label='Edit' @click='ev => editChannel(ev, channel)')
           q-btn(rel='delete' flat dense round icon='delete' aria-label='Delete' @click='ev => deleteChannel(ev, channel)')
-      
+
       //- Add channel button at bottom of list
       q-space
       q-list.q-pb-sm(dense)
         q-item
-          NewChannel
+          NewChannel(ref='$newChannel')
   q-page-container
     router-view
 </template>
@@ -69,8 +69,9 @@ function toggleMainSidebar () {
 /**
  * Edit channel
  */
+const $newChannel = ref(null)
 function editChannel (ev, channel) {
-  console.log('editChannel', channel)
+  $newChannel.value.showModal(channel)
   ev.preventDefault()
   ev.stopPropagation()
   return false
