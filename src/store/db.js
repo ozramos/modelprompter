@@ -57,6 +57,7 @@ class Store {
     channel.prompt = channel.prompt || SystemPrompt
     channel.created = channel.created || new Date()
     channel.updated = channel.updated || new Date()
+    channel.chatModeDisabled = false
 
     const channelID = await this.db.channels.add(channel)
     return await this.db.channels.get(channelID)

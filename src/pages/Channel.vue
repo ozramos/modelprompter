@@ -23,10 +23,10 @@ q-page.boxed(:style-fn='() => ({ height: "calc(100vh - 50px)" })')
 
     // Input field with submit button at bottom of view
     .q-pa-md.flex.full-width
-      q-fab.q-mr-sm.notext(square direction='up' color='blue' icon='settings' persistent)
+      q-fab.q-mr-sm.notext(square direction='up' :color='isChatModeOn ? "blue" : "dark"' icon='settings' persistent)
         q-fab-action(color='red' icon='delete' @click='clear' label='Clear messages' external-label)
-        q-fab-action(v-if='isChatModeOn' color='white' text-color='black' icon='group' @click='isChatModeOn = false; $q.notify("Chat disabled")' external-label label='Chat mode enabled')
-        q-fab-action(v-else color='blue' icon='group_off' @click='isChatModeOn = true; $q.notify("Chat enabled")' external-label label='Chat mode disabled')
+        q-fab-action(v-if='isChatModeOn' color='blue' icon='group' @click='toggleChat(false)' external-label label='Chat mode enabled')
+        q-fab-action(v-else color='dark' icon='group_off' @click='toggleChat(true)' external-label label='Chat mode disabled')
 
       q-input.flex-auto(ref='$input' v-model='input' @keyup.enter='submit' autogrow dense style="max-height: 350px; overflow: auto")
       q-btn.q-ml-sm(color='primary' label='Send' @click='submit')
@@ -80,9 +80,13 @@ const $router = useRouter()
 const $route = useRoute()
 watch(() => $route.params.id, async (newId = 0) => {
   messages.value = await store.getMessagesWithSystemPrompt(Number(newId))
+  const channel = await store.db.channels.get(getChannelID())
+  isChatModeOn.value = !channel?.chatModeDisabled
 })
 onMounted(async () => {
   messages.value = await store.getMessagesWithSystemPrompt(getChannelID())
+  const channel = await store.db.channels.get(getChannelID())
+  isChatModeOn.value = !channel?.chatModeDisabled
 
   // Redirect to main channel if channel doesn't exist
   if (getChannelID() && !messages.value.length) {
@@ -188,6 +192,23 @@ const $input = ref(null)
 onMounted(() => {
   $input.value.focus()
 })
+
+/**
+ * Disable chat mode
+ */
+async function toggleChat (disabled = false) {
+  isChatModeOn.value = disabled
+  if (disabled) {
+    $q.notify('Chat mode enabled')
+  } else {
+    $q.notify('Chat mode disabled')
+  }
+
+  // Update chat mode in database
+  await store.db.channels.where('id').equals(getChannelID()).modify({
+    chatModeDisabled: disabled
+  })
+}
 
 /**
  * Apply markdown
