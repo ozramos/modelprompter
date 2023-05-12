@@ -3,8 +3,9 @@
 html, body
   overflow: hidden
 
-.q-message-text-content
-  white-space: pre-wrap
+// Helpers
+.flex-wrap-none
+  flex-wrap: nowrap !important
 
 // Core
 a
@@ -32,9 +33,6 @@ iframe
   min-height: 350px
   width: 100%
 
-.q-message-text-content p, .hljs
-  margin: 0
-  
 // Layout
 .q-page.boxed
   max-width: 1200px
@@ -69,11 +67,17 @@ iframe
   > div
     display: block
     width: 100%
-    
+
 .q-message-text-content
   > div:first-child
     p:last-child
       margin-bottom: -1.25em
+
+.q-message-text-content
+  white-space: pre-wrap
+
+.q-message-text-content p, .hljs
+  margin: 0
 
 // Buttons
 .q-btn:not(.q-btn--flat)
@@ -114,6 +118,7 @@ iframe
 // Cards
 .q-card.q-card--dark.q-dark
   background: $dark
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.8), 0 2px 2px rgba(0, 0, 0, 0.86), 0 3px 1px -2px rgba(0, 0, 0, 0.88)
 
   .q-card.q-card--dark.q-dark
     background: lighten($dark, 16%)
@@ -178,12 +183,14 @@ iframe
 
   &.fullscreen
     .q-dialog__inner
-      padding: 4em
+      padding: 2.5em
     .q-dialog__inner, .q-dialog__inner > .q-card
       max-width: 100% !important
       height: 100%
       width: 100%
 
+body .q-dialog__backdrop
+  background: rgba(0, 0, 0, 0.8)
 
 // Sidebars
 .channel-menu-item
@@ -195,13 +202,24 @@ iframe
       display: flex
       flex: auto
       flex-direction: row
-      
+
       .q-btn
         min-height: auto
       .q-btn[rel='delete']:hover
         color: $negative
       .q-btn[rel='edit']:hover
         color: $teal
-      
+
       i.q-icon:first-child
         margin-right: 0
+
+.q-drawer
+  > .q-drawer__content,
+  .q-drawer__content > .q-list,
+  .q-drawer__content > .q-list > .q-item
+    width: inherit !important
+
+.flex-drawer.q-drawer__content
+  overflow: hidden
+  display: flex !important
+  flex-direction: column !important

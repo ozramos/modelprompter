@@ -4,7 +4,7 @@
 q-page.boxed(:style-fn='() => ({ height: "calc(100vh - 50px)" })')
   div.column(style='height: 100%;')
     // Chat area
-    .fancy-scrollbars.col.q-pa-md(style='overflow: auto')
+    .fancy-scrollbars.col.q-pa-md(ref='$messages' style='overflow: auto')
       q-chat-message(
         v-for='message in messages'
         :key='message.id'
@@ -20,13 +20,13 @@ q-page.boxed(:style-fn='() => ({ height: "calc(100vh - 50px)" })')
         bg-color='negative'
       )
         q-spinner-dots(size='2rem')
-    
+
     // Input field with submit button at bottom of view
     .q-pa-md.flex.full-width
-      q-fab.q-mr-sm.notext(square direction='up' color='blue' icon='settings' persistent)
+      q-fab.q-mr-sm.notext(square direction='up' :color='isChatModeOn ? "blue" : "dark"' icon='settings' persistent)
         q-fab-action(color='red' icon='delete' @click='clear' label='Clear messages' external-label)
-        q-fab-action(v-if='isChatModeOn' color='white' text-color='black' icon='group' @click='isChatModeOn = false; $q.notify("Chat disabled")' external-label label='Chat mode enabled')
-        q-fab-action(v-else color='blue' icon='group_off' @click='isChatModeOn = true; $q.notify("Chat enabled")' external-label label='Chat mode disabled')
+        q-fab-action(v-if='isChatModeOn' color='blue' icon='group' @click='toggleChat(false)' external-label label='Chat mode enabled')
+        q-fab-action(v-else color='dark' icon='group_off' @click='toggleChat(true)' external-label label='Chat mode disabled')
 
       q-input.flex-auto(ref='$input' v-model='input' @keyup.enter='submit' autogrow dense style="max-height: 350px; overflow: auto")
       q-btn.q-ml-sm(color='primary' label='Send' @click='submit')
@@ -46,6 +46,7 @@ import md from '/src/boot/markdown.js'
 import DOMPurify from 'dompurify'
 
 const $q = useQuasar()
+const $messages = ref(null)
 
 /**
  * Handle messages
@@ -55,6 +56,22 @@ const messages = ref(useObservable(liveQuery(async () => {
   return await store.getMessagesWithSystemPrompt(getChannelID())
 })))
 
+watch(messages, () => {
+  setTimeout(() => {maybeScrollToBottom(true)}, 0)
+})
+
+/**
+ * Maybe scroll to bottom
+ */
+let lastScrollTop = 0
+function maybeScrollToBottom (force = false) {
+  setTimeout(() => {
+    if ($messages.value.scrollTop > lastScrollTop - 200) {
+      $messages.value.scrollTop = $messages.value.scrollHeight
+    }
+    lastScrollTop = $messages.value.scrollTop
+  }, 0)
+}
 
 /**
  * Reload messages on router change
@@ -63,9 +80,13 @@ const $router = useRouter()
 const $route = useRoute()
 watch(() => $route.params.id, async (newId = 0) => {
   messages.value = await store.getMessagesWithSystemPrompt(Number(newId))
+  const channel = await store.db.channels.get(getChannelID())
+  isChatModeOn.value = !channel?.chatModeDisabled
 })
 onMounted(async () => {
   messages.value = await store.getMessagesWithSystemPrompt(getChannelID())
+  const channel = await store.db.channels.get(getChannelID())
+  isChatModeOn.value = !channel?.chatModeDisabled
 
   // Redirect to main channel if channel doesn't exist
   if (getChannelID() && !messages.value.length) {
@@ -78,7 +99,7 @@ onMounted(async () => {
  */
 function formatDate (date) {
   if (!(date instanceof Date)) {return ''}
-  
+
   const year = date.getFullYear()
   const month = String(date.getMonth() + 1).padStart(2, '0')
   const day = String(date.getDate()).padStart(2, '0')
@@ -109,11 +130,13 @@ async function submit (ev) {
       channel: getChannelID(),
       sent: true
     })
-    messages.value.push(message)
-    
+
     // Add message to chat
+    messages.value.push(message)
     input.value = ''
     $input.value.focus()
+
+    maybeScrollToBottom()
 
     // If chat mode is on, send message to AI
     if (isChatModeOn.value) {
@@ -121,7 +144,7 @@ async function submit (ev) {
       isThinking.value = true
       const transformedMessages = llm.transformMessages(messages.value)
       const response = await llm.call(transformedMessages)
-  
+
       // Add response to chat
       response.name = 'Agent'
       response.sent = false
@@ -169,6 +192,23 @@ const $input = ref(null)
 onMounted(() => {
   $input.value.focus()
 })
+
+/**
+ * Disable chat mode
+ */
+async function toggleChat (disabled = false) {
+  isChatModeOn.value = disabled
+  if (disabled) {
+    $q.notify('Chat mode enabled')
+  } else {
+    $q.notify('Chat mode disabled')
+  }
+
+  // Update chat mode in database
+  await store.db.channels.where('id').equals(getChannelID()).modify({
+    chatModeDisabled: disabled
+  })
+}
 
 /**
  * Apply markdown
