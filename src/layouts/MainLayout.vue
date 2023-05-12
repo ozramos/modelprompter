@@ -30,8 +30,11 @@ q-layout(view='lHh Lpr lFf')
           q-item-label(lines=1) {{ channel.name }}
           q-item-label(v-if='channel.caption' caption) {{ channel.caption }}
         q-item-section
-          q-btn(rel='edit' flat dense round icon='edit' aria-label='Edit' @click='ev => editChannel(ev, channel)')
-          q-btn(rel='delete' flat dense round icon='delete' aria-label='Delete' @click='ev => deleteChannel(ev, channel)')
+          q-btn(rel='edit' flat dense icon='edit' aria-label='Edit' @click='ev => editChannel(ev, channel)')
+          q-btn(rel='delete' flat dense icon='delete' aria-label='Delete' @click='ev => deleteChannel(ev, channel)')
+        q-menu(touch-position context-menu @show='ev => ev.preventDefault() && ev.stopPropagation()')
+          q-btn(rel='edit' flat icon='edit' aria-label='Edit' @click='ev => editChannel(ev, channel)')
+          q-btn(rel='delete' flat round icon='delete' aria-label='Delete' @click='ev => deleteChannel(ev, channel)')
 
       //- Add channel button at bottom of list
       q-space
