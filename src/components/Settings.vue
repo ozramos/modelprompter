@@ -3,8 +3,10 @@ q-btn.full-width.q-pl-sm.q-pr-none(color='light' icon='settings' @click='showMod
   q-dialog.fullscreen(v-model='isDialogVisible')
     q-card.flex.column
       q-card-section.flex-unset
-        .text-h6 Settings
+        .text-h4 Settings
       q-card-section.flex-auto.align-stretch.q-pb-none
+        .text-h6 Cloud sync
+        q-toggle(v-model='isCloudSyncEnabled' label='Enable cloud sync' color='primary')
 
       q-card-actions.flex-unset(align='right')
         q-btn(flat @click='hideModal') Cancel
@@ -13,13 +15,17 @@ q-btn.full-width.q-pl-sm.q-pr-none(color='light' icon='settings' @click='showMod
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import store from '/src/store/db.js'
 import {useQuasar} from 'quasar'
+import {useObservable} from '@vueuse/rxjs'
+import {liveQuery} from 'dexie'
 
-const isDialogVisible = ref(false)
+const $q = useQuasar()
 const $router = useRouter()
+const isDialogVisible = ref(false)
+const isCloudSyncEnabled = ref(false)
 
 /**
  * Shows the modal
@@ -34,7 +40,25 @@ function hideModal () {
 /**
  * Update settings
  */
-function updateSettings () {
-  console.log('updateSettings')
+async function updateSettings () {
+  await store.updateSettings({
+    isCloudSyncEnabled: isCloudSyncEnabled.value
+  })
+
+  $q.notify({message: 'Settings updated'})
+
+  hideModal()
 }
+
+/**
+ * Set initial settings
+ */
+const settings = ref(useObservable(liveQuery(async () => {
+  return await store.getSettings()
+})))
+
+onMounted(async () => {
+  const settings = await store.getSettings()
+  isCloudSyncEnabled.value = !!settings.isCloudSyncEnabled
+})
 </script>

@@ -81,6 +81,32 @@ class Store {
   async deleteChannel (id) {
     await this.db.channels.delete(id)
   }
+
+  /**
+   * Get settings as an object
+   */
+  async getSettings () {
+    const settings = await this.db.settings.toArray()
+    const settingsObject = {}
+    settings.forEach(setting => {
+      settingsObject[setting.key] = setting.value
+    })
+    return settingsObject
+  }
+
+  /**
+   * Update settings
+   */
+  async updateSettings (settings = {}) {
+    for (const key in settings) {
+      const setting = await this.db.settings.get({ key })
+      if (setting) {
+        await this.db.settings.update(setting.id, { value: settings[key] })
+      } else {
+        await this.db.settings.add({ key, value: settings[key] })
+      }
+    }
+  }
 }
 const store = new Store()
 
@@ -88,8 +114,8 @@ const store = new Store()
  * Export db
  */
 export default store
-store.db.version(1).stores({
+store.db.version(2).stores({
   channels: '++id, name',
   messages: '++id, channel, timestamp, from, to, message',
-  users: '++id, timestamp, first, last, bio, photo, channels'
+  settings: '++id, key, value'
 })

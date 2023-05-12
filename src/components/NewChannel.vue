@@ -3,11 +3,11 @@ q-btn.full-width.q-pl-sm(icon='chat' @click='showModal()') New Channel
   q-dialog.fullscreen(v-model='isDialogVisible')
     q-card.flex.column
       q-card-section.flex-unset
-        .text-h6 New Channel
+        .text-h4 New Channel
       q-card-section.q-pb-none
         p
           q-input(v-model='channelName' label='Channel name' outlined)
-        div <strong>Context:</strong> Describe how this server should channel and the agents within it should behave.
+        div Describe how this server should channel and the agents within it should behave.
       q-card-section.flex-auto.align-stretch
         q-input.full-height.flex-auto(v-model='prompt' label='Prompt' outlined type='textarea')
       q-card-actions.flex-unset(align='right')
