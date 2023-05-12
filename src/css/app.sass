@@ -34,7 +34,7 @@ iframe
 
 .q-message-text-content p, .hljs
   margin: 0
-  
+
 // Layout
 .q-page.boxed
   max-width: 1200px
@@ -69,7 +69,7 @@ iframe
   > div
     display: block
     width: 100%
-    
+
 .q-message-text-content
   > div:first-child
     p:last-child
@@ -195,19 +195,24 @@ iframe
       display: flex
       flex: auto
       flex-direction: row
-      
+
       .q-btn
         min-height: auto
       .q-btn[rel='delete']:hover
         color: $negative
       .q-btn[rel='edit']:hover
         color: $teal
-      
+
       i.q-icon:first-child
         margin-right: 0
 
 .q-drawer
   > .q-drawer__content,
-  .q-drawer__content > .q-list, 
+  .q-drawer__content > .q-list,
   .q-drawer__content > .q-list > .q-item
     width: inherit !important
+
+.flex-drawer.q-drawer__content
+  overflow: hidden
+  display: flex !important
+  flex-direction: column !important
