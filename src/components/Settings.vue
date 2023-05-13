@@ -4,7 +4,7 @@ q-btn.full-width.q-pl-sm.q-pr-none(color='light' icon='settings' @click='showMod
     q-card.flex.column
       q-card-section.flex-unset
         .text-h4 Settings
-      q-card-section
+      q-card-section(v-if='connectedToCloud')
         p.text-h6 Cloud sync
         p
           q-toggle.q-mr-xl(v-model='isCloudSyncEnabled' label='Enable cloud sync' color='primary')
@@ -39,6 +39,7 @@ const $router = useRouter()
 const isDialogVisible = ref(false)
 const isCloudSyncEnabled = ref(false)
 let jsonFile = ref(null)
+const connectedToCloud = !!process.env.DEXIE_DB_URL
 
 /**
  * Shows the modal

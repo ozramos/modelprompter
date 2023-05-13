@@ -12,7 +12,7 @@ const { configure } = require('quasar/wrappers')
 
 module.exports = configure(function (/* ctx */) {
   return {
-    
+
 
     // https://v2.quasar.dev/quasar-cli/prefetch-feature
     // preFetch: true,
@@ -70,7 +70,7 @@ module.exports = configure(function (/* ctx */) {
       // extendViteConf (viteConf) {},
       // viteVuePluginOptions: {},
 
-      
+
       vitePlugins: [
         ['vite-plugin-wasm'],
         ['vite-plugin-top-level-await'],
@@ -81,7 +81,7 @@ module.exports = configure(function (/* ctx */) {
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#devServer
     devServer: {
       // https: true
-      open: true // opens browser window automatically
+      open: false // opens browser window automatically
     },
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#framework

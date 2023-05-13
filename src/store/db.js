@@ -8,7 +8,7 @@ class Store {
   constructor () {
     this.db = new Dexie('chat', {addons: [dexieCloud]})
 
-    if (process.env.NODE_ENV === 'development' && process.env.DEXIE_DB_URL) {
+    if (process.env.DEXIE_DB_URL) {
       this.db.cloud.configure({
         databaseUrl: process.env.DEXIE_DB_URL
       })
@@ -187,9 +187,20 @@ const store = new Store()
 
 // Configure store after export
 export default store
-store.db.version(2).stores({
+const storeConfig = {
   channels: '@id, name',
   messages: '@id, channel, timestamp, from, to, message',
   settings: '@id, key, value'
-})
+}
+
+// Versions need to be upgraded by 2 to account for online/offline
+if (process.env.DEXIE_DB_URL) {
+  storeConfig.realms = '@realmId'
+  // Next: 5
+  store.db.version(3).stores(storeConfig)
+} else {
+  // Next: 4
+  store.db.version(2).stores(storeConfig)
+}
+
 
