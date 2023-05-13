@@ -11,9 +11,13 @@ q-btn.full-width.q-pl-sm.q-pr-none(color='light' icon='settings' @click='showMod
           strong(v-if='isCloudSyncEnabled') (Syncing will start once you update)
       q-card-section.flex-auto.align-stretch.q-pb-none
         p.text-h6 Local .json file
-        p
-          q-btn.q-mr-xl(@click='exportDatabase()') Export database
-          q-btn(@click='importDatabase()') Import database
+
+        q-card-actions.q-px-none
+          q-btn.q-mr-md(@click='exportDatabase()') Export
+          label.q-btn.bg-light.text-white.non-selectable.no-outline.q-btn--standard.q-btn--rectangle.q-btn--actionable.q-focusable.q-hoverable(for='jsonFile' color='light' style='line-height: 2.5em') Import
+          input.hidden(type='file' id='jsonFile' accept='.json' style='display: none' @change='ev => importDatabase(ev)')
+          q-space
+          q-btn(color='negative' @click='deleteDatabase()') Delete
 
 
       q-card-actions.flex-unset(align='right')
@@ -34,6 +38,7 @@ const $q = useQuasar()
 const $router = useRouter()
 const isDialogVisible = ref(false)
 const isCloudSyncEnabled = ref(false)
+let jsonFile = ref(null)
 
 /**
  * Shows the modal
@@ -81,7 +86,19 @@ function exportDatabase () {
 /**
  * Import database
  */
-function importDatabase () {
-  store.importDatabase()
+async function importDatabase (ev) {
+  if (!ev.target.files.length) return
+  await store.importDatabase(ev.target.files[0])
+  $q.notify({message: 'Database imported'})
+  // $router.push('/')
+}
+
+/**
+ * Delete database
+ */
+async function deleteDatabase () {
+  await store.deleteDatabase()
+  $q.notify({message: 'Database deleted'})
+  // $router.push('/')
 }
 </script>

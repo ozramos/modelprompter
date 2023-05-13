@@ -1,5 +1,5 @@
 import Dexie from 'dexie'
-import {exportDB} from 'dexie-export-import'
+import {exportDB, importInto} from 'dexie-export-import'
 import FileSaver from 'file-saver'
 import SystemPrompt from '/system-prompt.txt?raw'
 
@@ -23,7 +23,11 @@ class Store {
     } else if (!messages.length) {
       // Get the channels system prompt
       const channel = await this.db.channels.get(id)
-      messages = [await this.createMessage({ channel: id, text: channel.prompt })]
+      if (channel?.prompt) {
+        messages = [await this.createMessage({ channel: id, text: channel.prompt })]
+      } else {
+        messages = [await this.createMessage()]
+      }
     }
 
     return messages
@@ -123,8 +127,17 @@ class Store {
   /**
    * Import database
    */
-  async importDatabase () {
-    console.log('import database')
+  async importDatabase (jsonFile) {
+    await this.deleteDatabase()
+    importInto(this.db, jsonFile)
+  }
+
+  /**
+   * Delete database
+   */
+  async deleteDatabase () {
+    await this.db.delete()
+    this.db.open()
   }
 }
 const store = new Store()

@@ -4,7 +4,7 @@
 q-page.boxed(:style-fn='() => ({ height: "calc(100vh - 50px)" })')
   div.column(style='height: 100%;')
     // Chat area
-    .fancy-scrollbars.col.q-pa-md(ref='$messages' style='overflow: auto')
+    .full-width.col.q-pa-md(ref='$messages' style='overflow: auto')
       q-chat-message(
         v-for='message in messages'
         :key='message.id'
