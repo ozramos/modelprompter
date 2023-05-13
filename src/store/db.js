@@ -10,7 +10,7 @@ class Store {
 
     if (process.env.DEXIE_DB_URL) {
       this.db.cloud.configure({
-        databaseUrl: process.env.DEXIE_DB_URL
+        databaseUrl: process.env.DEXIE_DB_URL,
       })
     }
   }
@@ -190,7 +190,7 @@ export default store
 const storeConfig = {
   channels: '@id, name',
   messages: '@id, channel, timestamp, from, to, message',
-  settings: '@id, key, value'
+  settings: '@id, key, value',
 }
 
 // Versions need to be upgraded by 2 to account for online/offline
