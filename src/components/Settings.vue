@@ -42,7 +42,7 @@ const isDialogVisible = ref(false)
 const isCloudSyncEnabled = ref(false)
 let jsonFile = ref(null)
 const connectedToCloud = !!process.env.DEXIE_DB_URL
-const allowRegistration = !!process.env.ALLOW_REGISTRATION
+const allowRegistration = !!Number(process.env.ALLOW_REGISTRATION)
 
 /**
  * Listen for logged in user change
