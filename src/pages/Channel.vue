@@ -79,7 +79,7 @@ function maybeScrollToBottom (force = false) {
 const $router = useRouter()
 const $route = useRoute()
 watch(() => $route.params.id, async (newId = 0) => {
-  messages.value = await store.getMessagesWithSystemPrompt(Number(newId))
+  messages.value = await store.getMessagesWithSystemPrompt(newId)
   const channel = await store.db.channels.get(getChannelID())
   isChatModeOn.value = !channel?.chatModeDisabled
 })
@@ -110,7 +110,7 @@ function formatDate (date) {
 
 // Computed channel ID (when route changes)
 function getChannelID () {
-  return Number($router.currentRoute.value.params.id || 0)
+  return $router.currentRoute.value.params.id || 0
 }
 
 /**

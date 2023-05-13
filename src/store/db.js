@@ -1,11 +1,18 @@
 import Dexie from 'dexie'
+import dexieCloud from 'dexie-cloud-addon'
 import {exportDB, importInto} from 'dexie-export-import'
 import FileSaver from 'file-saver'
 import SystemPrompt from '/system-prompt.txt?raw'
 
 class Store {
   constructor () {
-    this.db = new Dexie('chat')
+    this.db = new Dexie('chat', {addons: [dexieCloud]})
+
+    if (process.env.NODE_ENV === 'development' && process.env.DEXIE_DB_URL) {
+      this.db.cloud.configure({
+        databaseUrl: process.env.DEXIE_DB_URL
+      })
+    }
   }
 
   /**
@@ -55,7 +62,7 @@ class Store {
    */
   async createMessage (message = {}) {
     message.name = message.name || 'System'
-    message.channel = Number(message.channel || 0)
+    message.channel = message.channel || 0
     message.created = message.date || new Date()
     message.updated = message.updated || new Date()
     message.text = message.text || SystemPrompt
@@ -181,7 +188,8 @@ const store = new Store()
 // Configure store after export
 export default store
 store.db.version(2).stores({
-  channels: '++id, name',
-  messages: '++id, channel, timestamp, from, to, message',
-  settings: '++id, key, value'
+  channels: '@id, name',
+  messages: '@id, channel, timestamp, from, to, message',
+  settings: '@id, key, value'
 })
+
