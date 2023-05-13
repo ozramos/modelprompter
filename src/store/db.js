@@ -9,12 +9,20 @@ class Store {
   }
 
   /**
+   * Handler for errors
+   */
+  error (e) {
+    console.error(e)
+  }
+
+  /**
    * Get all messages
    * - If there are none, a system prompt is returned
    */
   async getMessagesWithSystemPrompt (id = 0) {
     let messages = []
     messages = await this.db.messages.where('channel').equals(id).toArray()
+      .catch(this.error)
 
     // Add default system prompt on first load
     // @fixme this looks like the wrong place for this
@@ -38,6 +46,7 @@ class Store {
    */
   async getChannels () {
     return await this.db.channels.toArray()
+      .catch(this.error)
   }
 
   /**
@@ -52,7 +61,9 @@ class Store {
     message.text = message.text || SystemPrompt
     message.sent = message.sent || false
     const messageID = await this.db.messages.add(message)
+      .catch(this.error)
     return await this.db.messages.get(messageID)
+      .catch(this.error)
   }
 
   /**
@@ -66,7 +77,9 @@ class Store {
     channel.chatModeDisabled = false
 
     const channelID = await this.db.channels.add(channel)
+      .catch(this.error)
     return await this.db.channels.get(channelID)
+      .catch(this.error)
   }
 
   /**
@@ -78,7 +91,9 @@ class Store {
     channel.updated = channel.updated || new Date()
 
     await this.db.channels.update(channel.id, channel)
+      .catch(this.error)
     return await this.db.channels.get(channel.id)
+      .catch(this.error)
   }
 
   /**
@@ -86,6 +101,7 @@ class Store {
    */
   async deleteChannel (id) {
     await this.db.channels.delete(id)
+     .catch(this.error)
   }
 
   /**
@@ -93,6 +109,8 @@ class Store {
    */
   async getSettings () {
     const settings = await this.db.settings.toArray()
+      .catch(this.error)
+
     const settingsObject = {}
     settings.forEach(setting => {
       settingsObject[setting.key] = setting.value
@@ -108,8 +126,10 @@ class Store {
       const setting = await this.db.settings.get({ key })
       if (setting) {
         await this.db.settings.update(setting.id, { value: settings[key] })
+          .catch(this.error)
       } else {
         await this.db.settings.add({ key, value: settings[key] })
+          .catch(this.error)
       }
     }
   }
@@ -120,6 +140,7 @@ class Store {
    */
   async exportDatabase () {
     const blob = await exportDB(this.db)
+      .catch(this.error)
     const date = new Date().toISOString().split('T')
     FileSaver.saveAs(blob, `${date[0]}.modelprompter.json`)
   }
@@ -127,9 +148,16 @@ class Store {
   /**
    * Import database
    */
-  async importDatabase (jsonFile) {
+  async importDatabase (jsonFile, $q) {
     await this.deleteDatabase()
+      .catch(this.error)
     importInto(this.db, jsonFile)
+      .then(() => {
+        $q.notify({message: 'Database imported'})
+      })
+      .catch(e => {
+        $q.notify({message: `Error importing database:\n${e}`, color: 'red'})
+      })
   }
 
   /**
@@ -137,7 +165,9 @@ class Store {
    */
   async deleteDatabase () {
     await this.db.delete()
+      .catch(this.error)
     this.db.open()
+      .catch(this.error)
   }
 }
 const store = new Store()

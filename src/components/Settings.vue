@@ -88,9 +88,9 @@ function exportDatabase () {
  */
 async function importDatabase (ev) {
   if (!ev.target.files.length) return
-  await store.importDatabase(ev.target.files[0])
-  $q.notify({message: 'Database imported'})
-  // $router.push('/')
+  await store.importDatabase(ev.target.files[0], $q)
+  $router.push('/')
+  hideModal()
 }
 
 /**
@@ -99,6 +99,6 @@ async function importDatabase (ev) {
 async function deleteDatabase () {
   await store.deleteDatabase()
   $q.notify({message: 'Database deleted'})
-  // $router.push('/')
+  $router.push('/')
 }
 </script>
