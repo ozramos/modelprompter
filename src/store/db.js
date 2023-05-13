@@ -1,4 +1,6 @@
 import Dexie from 'dexie'
+import {exportDB} from 'dexie-export-import'
+import FileSaver from 'file-saver'
 import SystemPrompt from '/system-prompt.txt?raw'
 
 class Store {
@@ -107,12 +109,31 @@ class Store {
       }
     }
   }
+
+
+  /**
+   * Export database
+   */
+  async exportDatabase () {
+    const blob = await exportDB(this.db)
+    const date = new Date().toISOString().split('T')
+    FileSaver.saveAs(blob, `${date[0]}.modelprompter.json`)
+  }
+
+  /**
+   * Import database
+   */
+  async importDatabase () {
+    console.log('import database')
+  }
 }
 const store = new Store()
 
-/**
- * Export db
- */
+
+
+
+
+// Configure store after export
 export default store
 store.db.version(2).stores({
   channels: '++id, name',

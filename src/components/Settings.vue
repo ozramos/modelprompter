@@ -4,9 +4,17 @@ q-btn.full-width.q-pl-sm.q-pr-none(color='light' icon='settings' @click='showMod
     q-card.flex.column
       q-card-section.flex-unset
         .text-h4 Settings
+      q-card-section
+        p.text-h6 Cloud sync
+        p
+          q-toggle.q-mr-xl(v-model='isCloudSyncEnabled' label='Enable cloud sync' color='primary')
+          strong(v-if='isCloudSyncEnabled') (Syncing will start once you update)
       q-card-section.flex-auto.align-stretch.q-pb-none
-        .text-h6 Cloud sync
-        q-toggle(v-model='isCloudSyncEnabled' label='Enable cloud sync' color='primary')
+        p.text-h6 Local .json file
+        p
+          q-btn.q-mr-xl(@click='exportDatabase()') Export database
+          q-btn(@click='importDatabase()') Import database
+
 
       q-card-actions.flex-unset(align='right')
         q-btn(flat @click='hideModal') Cancel
@@ -61,4 +69,19 @@ onMounted(async () => {
   const settings = await store.getSettings()
   isCloudSyncEnabled.value = !!settings.isCloudSyncEnabled
 })
+
+
+/**
+ * Export database
+ */
+function exportDatabase () {
+  store.exportDatabase()
+}
+
+/**
+ * Import database
+ */
+function importDatabase () {
+  store.importDatabase()
+}
 </script>
