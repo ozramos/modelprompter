@@ -178,6 +178,13 @@ class Store {
     await this.db.open()
       .catch(this.error)
   }
+
+  /**
+   * Is logged in
+   */
+  async isLoggedIn () {
+    return this.db.cloud.currentUserId != 'unauthorized'
+  }
 }
 const store = new Store()
 

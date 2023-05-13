@@ -6,7 +6,8 @@ q-btn.full-width.q-pl-sm.q-pr-none(color='light' icon='settings' @click='showMod
         .text-h4 Settings
       q-card-section(v-if='connectedToCloud && allowRegistration')
         p.text-h6 Cloud sync
-        p(v-if='user')
+        p(v-if='isLoggedIn')
+          p syncing
           q-toggle.q-mr-xl(v-model='isCloudSyncEnabled' label='Enable cloud sync' color='primary')
           strong(v-if='isCloudSyncEnabled') (Syncing will start once you update)
         p(v-else)
@@ -47,10 +48,12 @@ const allowRegistration = !!Number(process.env.ALLOW_REGISTRATION)
 /**
  * Listen for logged in user change
  */
-const user = ref(useObservable(liveQuery(() => {
-  return store?.db?.currentUser
+const isLoggedIn = ref(useObservable(liveQuery(() => {
+  return !!store?.db?.cloud?.currentUserId && store?.db?.cloud?.currentUserId !== 'unauthorized'
 })))
-
+onMounted(() => {
+  isLoggedIn.value = !!store?.db?.cloud?.currentUserId && store?.db?.cloud?.currentUserId !== 'unauthorized'
+})
 
 /**
  * Shows the modal
