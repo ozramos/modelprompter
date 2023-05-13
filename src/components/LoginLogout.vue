@@ -1,18 +1,18 @@
 <template lang="pug">
-q-btn(v-if='allowLogin && connectedToCloud' @click='showModal()' icon='login') Sync to cloud
+q-btn(v-if='allowLogin && connectedToCloud' @click='showModal()' icon='login') Sign in
   q-dialog(v-model='isDialogVisible')
     q-card(style='height: auto !important; min-width: 350px; max-width: 600px !important; width: auto !important;')
       q-card-section
-        .text-h4 Login
+        .text-h4 Sign in
       q-card-section
-        p(v-if='allowRegistration') <strong>Regsitration isn't required</strong>, but if you want to sync across devices or invite others, login below to get an access token emailed from <a href="https://dexie.org/cloud" target="_blank">Dexie Cloud</a>
-        p(v-else) <strong class='text-red'>Registration is closed.</strong> But you can login below to get an access token emailed from <a href="https://dexie.org/cloud" target="_blank">Dexie Cloud</a>
+        p(v-if='allowRegistration') <strong>Regsitration isn't required</strong>, but if you want to sync across devices or invite others, login below to get an access token emailed from <a href="https://dexie.org/cloud" target="_blank">Dexie Cloud</a> (our data store provider)
+        p(v-else) <strong class='text-red'>Registration is closed.</strong> If you're in beta, sign in below to get an access token emailed from <a href="https://dexie.org/cloud" target="_blank">Dexie Cloud</a> (our data store provider)
       q-card-actions(align='right')
         q-btn(flat @click='hideModal') Cancel
         //- q-space
         //- q-btn(color='negative' @click='deleteDatabase()') Delete Data
         q-space
-        q-btn(@click='startLogin') Login
+        q-btn(@click='startLogin') Sign in
 </template>
 
 
@@ -47,6 +47,7 @@ function hideModal () {
  * Login
  */
 function startLogin () {
-  console.log('startLogin')
+  hideModal()
+  store.db.cloud.login()
 }
 </script>
