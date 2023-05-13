@@ -151,6 +151,7 @@ class Store {
   async importDatabase (jsonFile, $q) {
     await this.deleteDatabase()
       .catch(this.error)
+
     importInto(this.db, jsonFile)
       .then(() => {
         $q.notify({message: 'Database imported'})
@@ -166,7 +167,8 @@ class Store {
   async deleteDatabase () {
     await this.db.delete()
       .catch(this.error)
-    this.db.open()
+
+    await this.db.open()
       .catch(this.error)
   }
 }

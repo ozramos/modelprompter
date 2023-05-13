@@ -16,12 +16,12 @@ q-btn.full-width.q-pl-sm.q-pr-none(color='light' icon='settings' @click='showMod
           q-btn.q-mr-md(@click='exportDatabase()') Export
           label.q-btn.bg-light.text-white.non-selectable.no-outline.q-btn--standard.q-btn--rectangle.q-btn--actionable.q-focusable.q-hoverable(for='jsonFile' color='light' style='line-height: 2.5em') Import
           input.hidden(type='file' id='jsonFile' accept='.json' style='display: none' @change='ev => importDatabase(ev)')
-          q-space
-          q-btn(color='negative' @click='deleteDatabase()') Delete
 
 
       q-card-actions.flex-unset(align='right')
         q-btn(flat @click='hideModal') Cancel
+        q-space
+        q-btn(color='negative' @click='deleteDatabase()') Delete
         q-space
         q-btn(@click='updateSettings') Update Settings
 </template>
@@ -98,7 +98,7 @@ async function importDatabase (ev) {
  */
 async function deleteDatabase () {
   await store.deleteDatabase()
-  $q.notify({message: 'Database deleted'})
   $router.push('/')
+  window.location.reload()
 }
 </script>
