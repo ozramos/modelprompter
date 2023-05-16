@@ -13,8 +13,6 @@ q-btn(v-if='!isLoggedIn && allowLogin && connectedToCloud' @click='showModal()' 
       q-card-actions(align='right')
         q-btn(flat @click='hideModal') Cancel
         q-space
-        q-btn(color='light' @click='skipToOTP()') Already have a token?
-        q-space
         q-btn(@click='startLogin' :loading='isWaitingForOTP') Email access token
 
     //- Get OTP
@@ -54,6 +52,7 @@ const email = ref('')
 const $email = ref(null)
 const $otpToken = ref('')
 const otpToken = ref('')
+const otpData = ref(null)
 const isWaitingForOTP = ref(false)
 const isLoggingInWithOTP = ref(false)
 
@@ -72,21 +71,6 @@ watch(user, () => {
   if (hasManuallyLoggedIn.value && isLoggedIn.value) {
     $q.notify({message: 'Logged in'})
   }
-})
-
-// Listen for cloud sync status
-const userInteraction = ref(null)
-
-// Subscribe to db.cloud.userInteraction
-store.db.cloud.userInteraction.subscribe((value) => {
-  if (value?.type === 'otp') {
-    isWaitingForOTP.value = false
-    hasSentEmail.value = true
-    hasManuallyLoggedIn.value = true
-    $q.notify({message: 'Email sent'})
-  }
-
-  userInteraction.value = value || {}
 })
 
 /**
@@ -120,7 +104,7 @@ function hideModal () {
 /**
  * Login
  */
-function startLogin () {
+ async function startLogin () {
   if (!email.value) {
     $q.notify({message: 'Please enter an email'})
     return
@@ -128,7 +112,30 @@ function startLogin () {
   hasSentEmail.value = false
   isWaitingForOTP.value = true
 
-  store.db.cloud.login({email: email.value, grant_type: 'otp'})
+  await nextTick()
+
+  setTimeout(async () => {
+    const resp = await fetch(`${store.db.cloud.options.databaseUrl}/token`, {
+      body: JSON.stringify({
+        email: email.value,
+        grant_type: 'otp',
+        scopes: ['ACCESS_DB']
+      }),
+      method: 'post',
+      headers: { 'Content-Type': 'application/json' },
+      mode: 'cors',
+    })
+    otpData.value = await resp.json()
+
+    hasSentEmail.value = true
+    isWaitingForOTP.value = false
+    hasManuallyLoggedIn.value = true
+    $q.notify({message: 'Email sent'})
+
+    nextTick(() => {
+      $otpToken.value.focus()
+    })
+  })
 }
 
 /**
@@ -141,8 +148,34 @@ function skipToOTP () {
 
 /**
  * Login with OTP
+ * @see https://github.com/dexie/Dexie.js/blob/552005de4f89cf0eb61c8195ae116cb1fd724919/addons/dexie-cloud/src/authentication/otpFetchTokenCallback.ts#LL89C7-L98C8
  */
-function loginWithOTP () {
-  console.log('loginWithOTP')
+async function loginWithOTP () {
+  const resp = await fetch(`${store.db.cloud.options.databaseUrl}/token`, {
+    body: JSON.stringify({
+      email: email.value,
+      otp: otpToken.value,
+      otp_id: otpData.value.otp_id,
+      grant_type: 'otp',
+      scopes: ['ACCESS_DB']
+    }),
+    method: 'post',
+    headers: { 'Content-Type': 'application/json' },
+    mode: 'cors',
+  })
+
+  // Failed
+  if (resp.status !== 200) {
+    $q.notify({message: 'Invalid token', color: 'negative'})
+    return
+  }
+
+  // Success
+  const accessToken = await resp.json()
+
+  // Login with access token
+  store.db.cloud.options.fetchTokens = () => accessToken
+  await store.db.cloud.login({email: email.value, grant_type: 'otp'})
+  hideModal()
 }
 </script>

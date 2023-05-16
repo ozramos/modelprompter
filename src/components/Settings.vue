@@ -50,13 +50,8 @@ const allowRegistration = !!Number(process.env.ALLOW_REGISTRATION)
  */
 const isLoggedIn = ref(false)
 const user = ref(useObservable(store.db?.cloud?.currentUser || {}))
-
 watch(user, () => {
   isLoggedIn.value = store.db.cloud.currentUserId && store.db.cloud.currentUserId !== 'unauthorized'
-
-  if (hasManuallyLoggedIn.value && isLoggedIn.value) {
-    $q.notify({message: 'Logged in'})
-  }
 })
 
 /**
