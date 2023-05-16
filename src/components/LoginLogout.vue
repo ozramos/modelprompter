@@ -13,6 +13,8 @@ q-btn(v-if='!isLoggedIn && allowLogin && connectedToCloud' @click='showModal()' 
       q-card-actions(align='right')
         q-btn(flat @click='hideModal') Cancel
         q-space
+        q-btn(color='light' @click='skipToOTP()') Already have a token?
+        q-space
         q-btn(@click='startLogin' :loading='isWaitingForOTP') Email access token
 
     //- Get OTP
@@ -20,8 +22,6 @@ q-btn(v-if='!isLoggedIn && allowLogin && connectedToCloud' @click='showModal()' 
       q-card-section
         .text-h4 Enter OTP
         p Check your email for an access token from Dexie.org (the cloud provider for this app) and enter the token below
-        //- p(v-if='allowRegistration') <strong>Regsitration isn't required</strong>, but if you want to sync across devices or invite others, login below to get an access token emailed from <a href="https://dexie.org/cloud" target="_blank">Dexie Cloud</a> (our data store provider)
-        //- p(v-else) <strong class='text-red'>Registration is closed.</strong> If you're in beta, sign in below to get an access token emailed from <a href="https://dexie.org/cloud" target="_blank">Dexie Cloud</a> (our data store provider)
         div
           q-input(ref='$email' v-model='email' label='Email' type='email' :disabled='isWaitingForOTP')
         div
@@ -30,7 +30,7 @@ q-btn(v-if='!isLoggedIn && allowLogin && connectedToCloud' @click='showModal()' 
         q-btn(flat @click='hideModal') Cancel
         //- q-space
         q-space
-        q-btn(@click='startLogin' :loading='isWaitingForOTP') Email access token
+        q-btn(@click='loginWithOTP()' :disabled='!email || !otpToken' :loading='isLoggingInWithOTP') Login
 
 q-btn(v-if="isLoggedIn && allowLogin && connectedToCloud" color='negative' @click='logout()' icon='logout') Sign out
 </template>
@@ -53,7 +53,9 @@ const hasSentEmail = ref(false)
 const email = ref('')
 const $email = ref(null)
 const $otpToken = ref('')
+const otpToken = ref('')
 const isWaitingForOTP = ref(false)
+const isLoggingInWithOTP = ref(false)
 
 const connectedToCloud = !!process.env.DEXIE_DB_URL
 const allowRegistration = !!Number(process.env.ALLOW_REGISTRATION)
@@ -127,5 +129,20 @@ function startLogin () {
   isWaitingForOTP.value = true
 
   store.db.cloud.login({email: email.value, grant_type: 'otp'})
+}
+
+/**
+ * Skip login and go to otp
+ */
+function skipToOTP () {
+  hasSentEmail.value = true
+  isWaitingForOTP.value = false
+}
+
+/**
+ * Login with OTP
+ */
+function loginWithOTP () {
+  console.log('loginWithOTP')
 }
 </script>
