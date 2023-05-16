@@ -11,6 +11,7 @@ class Store {
     if (process.env.DEXIE_DB_URL) {
       this.db.cloud.configure({
         databaseUrl: process.env.DEXIE_DB_URL,
+        customLoginGui: true,
       })
     }
   }

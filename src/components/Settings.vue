@@ -29,7 +29,7 @@ q-btn.full-width.q-pl-sm.q-pr-none(color='light' icon='settings' @click='showMod
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import store from '/src/store/db.js'
 import {useQuasar} from 'quasar'
@@ -48,11 +48,15 @@ const allowRegistration = !!Number(process.env.ALLOW_REGISTRATION)
 /**
  * Listen for logged in user change
  */
-const isLoggedIn = ref(useObservable(liveQuery(() => {
-  return !!store?.db?.cloud?.currentUserId && store?.db?.cloud?.currentUserId !== 'unauthorized'
-})))
-onMounted(() => {
-  isLoggedIn.value = !!store?.db?.cloud?.currentUserId && store?.db?.cloud?.currentUserId !== 'unauthorized'
+const isLoggedIn = ref(false)
+const user = ref(useObservable(store.db?.cloud?.currentUser || {}))
+
+watch(user, () => {
+  isLoggedIn.value = store.db.cloud.currentUserId && store.db.cloud.currentUserId !== 'unauthorized'
+
+  if (hasManuallyLoggedIn.value && isLoggedIn.value) {
+    $q.notify({message: 'Logged in'})
+  }
 })
 
 /**
