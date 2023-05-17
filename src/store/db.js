@@ -1,6 +1,5 @@
 import Dexie from 'dexie'
 import dexieCloud from 'dexie-cloud-addon'
-import {exportDB, importInto} from 'dexie-export-import'
 import FileSaver from 'file-saver'
 import SystemPrompt from '/system-prompt.txt?raw'
 
@@ -44,7 +43,7 @@ class Store {
    * Get all messages
    * - If there are none, a system prompt is returned
    */
-  async getMessagesWithSystemPrompt (id = 0) {
+  async getMessagesWithSystemPrompt (id = 'chnSystem') {
     let messages = []
     messages = await this.db.messages.where('channel').equals(id).toArray()
       .catch(this.error)
@@ -64,6 +63,40 @@ class Store {
     }
 
     return messages
+  }
+
+  /**
+   * Get all messages for all channels
+   */
+  async getAllMessagesWithSystemPrompt () {
+    let messages = []
+    messages = await this.db.messages.toArray()
+      .catch(this.error)
+
+    // Add default system prompt on first load
+    // @fixme this looks like the wrong place for this
+    if (!messages.length) {
+      messages = [await this.createMessage()]
+    }
+
+    return messages
+  }
+
+  /**
+   * Get all channels
+   */
+  async getChannelsWithSystemPrompt () {
+    let channels = [{
+      "id": "chnSystem",
+      "name": "System",
+      "prompt": "Welcome! I'm ModelPrompter, a friendly chatbot here to help. Ask me anything!",
+      "created": "2023-05-17T05:08:40.643Z",
+      "updated": "2023-05-17T05:17:51.066Z",
+      "chatModeDisabled": false
+    }]
+    channels.push(...await this.db.channels.toArray().catch(this.error))
+
+    return channels
   }
 
   /**
@@ -164,46 +197,50 @@ class Store {
    * Export database
    */
   async exportDatabase () {
-    const $logins = await this.db.$logins.toArray()
-   .catch(this.error)
-   await this.db.$logins.clear()
-
-    const blob = await exportDB(this.db)
-   .catch(this.error)
-
+    // Export all tables to json
+    const json = {
+      messages: await this.getAllMessagesWithSystemPrompt(),
+      channels: await this.getChannelsWithSystemPrompt(),
+      settings: await this.db.settings.toArray().catch(this.error),
+    }
+    // turn json to file blob
+    const blob = new Blob([JSON.stringify(json, null, 2)], {type: 'application/json'})
+    // turn blob to file
+    const data = new File([blob], 'prompter.json', {type: 'application/json'})
+    // save file
     const date = new Date().toISOString().split('T')
-    FileSaver.saveAs(blob, `${date[0]}.modelprompter.json`)
-
-    // Add logins back in
-    await this.db.$logins.bulkAdd($logins)
-    .catch(this.error)
+    FileSaver.saveAs(data, `${date[0]}.prompter.json`)
   }
 
   /**
    * Import database
    */
   async importDatabase (jsonFile, $q) {
-    // @see https://dexie.org/docs/ExportImport/dexie-export-import
-    importInto(this.db, jsonFile, {
-      clearTablesBeforeImport: true,
-      overwriteValues: true
-    })
-      .then(() => {
-        $q.notify({message: 'Database imported'})
-      })
-      .catch(e => {
-        $q.notify({message: `Error importing database:\n${e}`, color: 'red'})
-      })
+    // Convert file to json
+    const json = JSON.parse(await jsonFile.text())
+
+    // Merge in tables
+    const channels = await this.db.channels.toArray()
+    await this.db.channels.bulkPut(json.channels).catch(this.error)
+
+    const messages = await this.db.messages.toArray()
+    await this.db.messages.bulkPut(json.messages).catch(this.error)
+
+    const settings = await this.db.settings.toArray()
+    await this.db.settings.bulkPut(json.settings).catch(this.error)
+
+    if (process.env.DEXIE_DB_URL) {
+      this.db.cloud.sync()
+    }
   }
 
   /**
    * Delete database
    */
   async deleteDatabase () {
-    await this.db.delete()
-      .catch(this.error)
-
-    await this.setup()
+    await this.db.messages.clear().catch(this.error)
+    await this.db.channels.clear().catch(this.error)
+    await this.db.settings.clear().catch(this.error)
   }
 
   /**

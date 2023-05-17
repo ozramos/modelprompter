@@ -16,7 +16,6 @@
     "@vueuse/rxjs": "^10.1.2",
     "dexie": "^4.0.1-alpha.10",
     "dexie-cloud-addon": "^4.0.1-beta.40",
-    "dexie-export-import": "^4.0.7",
     "dompurify": "^3.0.3",
     "dotenv": "^16.0.3",
     "file-saver": "^2.0.5",

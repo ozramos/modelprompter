@@ -92,8 +92,10 @@ onMounted(async () => {
 /**
  * Export database
  */
-function exportDatabase () {
-  store.exportDatabase()
+async function exportDatabase () {
+  await store.exportDatabase()
+  hideModal()
+  $q.notify({message: 'Database exported'})
 }
 
 /**
@@ -112,6 +114,7 @@ async function importDatabase (ev) {
 async function deleteDatabase () {
   await store.deleteDatabase()
   $router.push('/')
+  hideModal()
   window.location.reload()
 }
 </script>

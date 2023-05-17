@@ -13,6 +13,8 @@ q-btn(v-if='!isLoggedIn && allowLogin && connectedToCloud' @click='showModal()' 
       q-card-actions(align='right')
         q-btn(flat @click='hideModal') Cancel
         q-space
+        q-btn(color='light' @click='hideModal') or enter Token
+        q-space
         q-btn(@click='startLogin' :loading='isWaitingForOTP') Email access token
 
     //- Get OTP
@@ -77,11 +79,13 @@ watch(user, () => {
  * Logout
  */
 async function logout () {
-  hideModal()
-  await store.deleteDatabase()
   await store.db.$logins.clear()
   $q.notify({message: 'Logged out'})
-  $router.push('/')
+  window.indexedDB.databases().then((r) => {
+    for (var i = 0; i < r.length; i++) window.indexedDB.deleteDatabase(r[i].name)
+  })
+  window.location.reload()
+  hideModal()
 }
 
 /**

@@ -12,7 +12,7 @@ q-page.boxed(:style-fn='() => ({ height: "calc(100vh - 50px)" })')
         :text='[formattedMessage[message.id]]'
         :bg-color='getChatBg(message)'
         :text-color='message.sent ? "white" : "black"'
-        :stamp='formatDate(message.updated)'
+        :stamp='formatDate(message.created || message.updated)'
         :sent='message.name === "System"'
       )
       q-chat-message(
@@ -98,7 +98,11 @@ onMounted(async () => {
  * Format date to YYYY-MM-DD HH:MM
  */
 function formatDate (date) {
-  if (!(date instanceof Date)) {return ''}
+  try {
+    date = new Date(date)
+  } catch (e) {
+    return ''
+  }
 
   const year = date.getFullYear()
   const month = String(date.getMonth() + 1).padStart(2, '0')
