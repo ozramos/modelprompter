@@ -66,40 +66,6 @@ class Store {
   }
 
   /**
-   * Get all messages for all channels
-   */
-  async getAllMessagesWithSystemPrompt () {
-    let messages = []
-    messages = await this.db.messages.toArray()
-      .catch(this.error)
-
-    // Add default system prompt on first load
-    // @fixme this looks like the wrong place for this
-    if (!messages.length) {
-      messages = [await this.createMessage()]
-    }
-
-    return messages
-  }
-
-  /**
-   * Get all channels
-   */
-  async getChannelsWithSystemPrompt () {
-    let channels = [{
-      "id": "chnSystem",
-      "name": "System",
-      "prompt": "Welcome! I'm ModelPrompter, a friendly chatbot here to help. Ask me anything!",
-      "created": "2023-05-17T05:08:40.643Z",
-      "updated": "2023-05-17T05:17:51.066Z",
-      "chatModeDisabled": false
-    }]
-    channels.push(...await this.db.channels.toArray().catch(this.error))
-
-    return channels
-  }
-
-  /**
    * Get Channels
    */
   async getChannels () {
@@ -199,9 +165,9 @@ class Store {
   async exportDatabase () {
     // Export all tables to json
     const json = {
-      messages: await this.getAllMessagesWithSystemPrompt(),
-      channels: await this.getChannelsWithSystemPrompt(),
       settings: await this.db.settings.toArray().catch(this.error),
+      channels: await this.db.channels.toArray().catch(this.error),
+      messages: await this.db.messages.toArray().catch(this.error),
     }
     // turn json to file blob
     const blob = new Blob([JSON.stringify(json, null, 2)], {type: 'application/json'})
