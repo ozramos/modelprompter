@@ -53,7 +53,7 @@ iframe
   background-color: $dark
 
 ::-webkit-scrollbar-thumb
-  background-color: #0ae
+  background-color: $negative
   background-image: -webkit-gradient(linear, 0 0, 0 100%, color-stop(.5, rgba(255, 255, 255, .2)), color-stop(.5, transparent), to(transparent))
 
 // Header
@@ -173,6 +173,10 @@ iframe
   display: none
 
 // Modals
+.dxc-login-dlg
+  position: fixed !important
+  z-index: 9999999999999999999999999999 !important
+
 .q-dialog
   .q-card.q-dark
     background: lighten($dark, 8%)

@@ -9,6 +9,8 @@ q-layout(view='lHh Lpr lFf')
           img.gt-sm.q-mr-sm(src='/logo-title.png' height=32 style='vertical-align: middle')
         a(href='https://github.com/modelprompter/modelprompter/releases' target='_blank')
           small.q-ml-sm(style='font-size: .65em; display: inline-block; transform: translate(0, -3px)') {{pkg.version}}
+      q-space(style='flex-grow: 0 !important')
+      LoginLogout
     q-space
 
   q-drawer.flex-drawer.full-height.width-inherit(v-model='isMainSidebarOpen' show-if-above bordered)
@@ -43,6 +45,8 @@ q-layout(view='lHh Lpr lFf')
     q-space
     q-list.q-pb-sm(dense)
       q-item
+        div.q-pr-sm
+          Settings
         NewChannel(ref='$newChannel')
   q-page-container
     router-view
@@ -55,6 +59,8 @@ import {liveQuery} from 'dexie'
 import pkg from '/package.json'
 import store from '/src/store/db.js'
 import NewChannel from '/src/components/NewChannel.vue'
+import Settings from '/src/components/Settings.vue'
+import LoginLogout from '/src/components/LoginLogout.vue'
 import {useQuasar} from 'quasar'
 import {useRouter} from 'vue-router'
 

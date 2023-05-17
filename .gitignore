@@ -1,7 +1,11 @@
 .DS_Store
 .thumbs.db
 node_modules
+
+# Secrets
 .env
+dexie-cloud.key
+dexie-cloud.json
 
 # Quasar core related directories
 .quasar
