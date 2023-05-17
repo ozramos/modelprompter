@@ -219,15 +219,29 @@ class Store {
     // Convert file to json
     const json = JSON.parse(await jsonFile.text())
 
-    // Merge in tables
-    const channels = await this.db.channels.toArray()
-    await this.db.channels.bulkPut(json.channels).catch(this.error)
-
-    const messages = await this.db.messages.toArray()
-    await this.db.messages.bulkPut(json.messages).catch(this.error)
-
+    // Import all settings
     const settings = await this.db.settings.toArray()
     await this.db.settings.bulkPut(json.settings).catch(this.error)
+
+    // Import channels individually, creating as needed
+    for (const channel of json.channels) {
+      const existingChannel = await this.db.channels.get(channel.id)
+      if (existingChannel) {
+        await this.db.channels.update(channel.id, channel).catch(this.error)
+      } else {
+        await this.db.channels.add(channel).catch(this.error)
+      }
+    }
+
+    // Merge in tables
+    for (const message of json.messages) {
+      const existingMessage = await this.db.messages.get(message.id)
+      if (existingMessage) {
+        await this.db.messages.update(message.id, message).catch(this.error)
+      } else {
+        await this.db.messages.add(message).catch(this.error)
+      }
+    }
 
     if (process.env.DEXIE_DB_URL) {
       this.db.cloud.sync()
@@ -238,9 +252,27 @@ class Store {
    * Delete database
    */
   async deleteDatabase () {
-    await this.db.messages.clear().catch(this.error)
-    await this.db.channels.clear().catch(this.error)
-    await this.db.settings.clear().catch(this.error)
+    // Delete each message individually
+    const messages = await this.db.messages.toArray()
+    for (const message of messages) {
+      await this.db.messages.delete(message.id).catch(this.error)
+    }
+
+    // Delete each channel individually
+    const channels = await this.db.channels.toArray()
+    for (const channel of channels) {
+      await this.db.channels.delete(channel.id).catch(this.error)
+    }
+
+    // Delete each setting individually
+    const settings = await this.db.settings.toArray()
+    for (const setting of settings) {
+      await this.db.settings.delete(setting.id).catch(this.error)
+    }
+
+    if (process.env.DEXIE_DB_URL) {
+      this.db.cloud.sync()
+    }
   }
 
   /**

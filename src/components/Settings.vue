@@ -115,6 +115,5 @@ async function deleteDatabase () {
   await store.deleteDatabase()
   $router.push('/')
   hideModal()
-  window.location.reload()
 }
 </script>
