@@ -78,8 +78,10 @@ watch(user, () => {
  */
 async function logout () {
   hideModal()
+  await store.deleteDatabase()
   await store.db.$logins.clear()
   $q.notify({message: 'Logged out'})
+  $router.push('/')
 }
 
 /**
@@ -177,5 +179,6 @@ async function loginWithOTP () {
   store.db.cloud.options.fetchTokens = () => accessToken
   await store.db.cloud.login({email: email.value, grant_type: 'otp'})
   hideModal()
+  $router.push('/')
 }
 </script>

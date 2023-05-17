@@ -164,10 +164,19 @@ class Store {
    * Export database
    */
   async exportDatabase () {
+    const $logins = await this.db.$logins.toArray()
+   .catch(this.error)
+   await this.db.$logins.clear()
+
     const blob = await exportDB(this.db)
-      .catch(this.error)
+   .catch(this.error)
+
     const date = new Date().toISOString().split('T')
     FileSaver.saveAs(blob, `${date[0]}.modelprompter.json`)
+
+    // Add logins back in
+    await this.db.$logins.bulkAdd($logins)
+    .catch(this.error)
   }
 
   /**
