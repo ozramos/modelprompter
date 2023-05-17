@@ -6,7 +6,24 @@ import SystemPrompt from '/system-prompt.txt?raw'
 
 class Store {
   constructor () {
-    this.db = new Dexie('chat', {addons: [dexieCloud]})
+    this.setup()
+  }
+
+  /**
+   * Setup
+   */
+  async setup () {
+    this.db = await new Dexie('chat', {addons: [dexieCloud]})
+
+    // Versions need to be upgraded by 2 to account for online/offline
+    if (process.env.DEXIE_DB_URL) {
+      storeConfig.realms = '@realmId'
+      // Next: 5
+      store.db.version(3).stores(storeConfig)
+    } else {
+      // Next: 4
+      store.db.version(2).stores(storeConfig)
+    }
 
     if (process.env.DEXIE_DB_URL) {
       this.db.cloud.configure({
@@ -157,10 +174,11 @@ class Store {
    * Import database
    */
   async importDatabase (jsonFile, $q) {
-    await this.deleteDatabase()
-      .catch(this.error)
-
-    importInto(this.db, jsonFile)
+    // @see https://dexie.org/docs/ExportImport/dexie-export-import
+    importInto(this.db, jsonFile, {
+      clearTablesBeforeImport: true,
+      overwriteValues: true
+    })
       .then(() => {
         $q.notify({message: 'Database imported'})
       })
@@ -176,8 +194,7 @@ class Store {
     await this.db.delete()
       .catch(this.error)
 
-    await this.db.open()
-      .catch(this.error)
+    await this.setup()
   }
 
   /**
@@ -199,16 +216,6 @@ const storeConfig = {
   channels: '@id, name',
   messages: '@id, channel, timestamp, from, to, message',
   settings: '@id, key, value',
-}
-
-// Versions need to be upgraded by 2 to account for online/offline
-if (process.env.DEXIE_DB_URL) {
-  storeConfig.realms = '@realmId'
-  // Next: 5
-  store.db.version(3).stores(storeConfig)
-} else {
-  // Next: 4
-  store.db.version(2).stores(storeConfig)
 }
 
 

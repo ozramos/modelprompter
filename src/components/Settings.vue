@@ -7,7 +7,6 @@ q-btn.full-width.q-pl-sm.q-pr-none(color='light' icon='settings' @click='showMod
       q-card-section(v-if='connectedToCloud && allowRegistration')
         p.text-h6 Cloud sync
         p(v-if='isLoggedIn')
-          p syncing
           q-toggle.q-mr-xl(v-model='isCloudSyncEnabled' label='Enable cloud sync' color='primary')
           strong(v-if='isCloudSyncEnabled') (Syncing will start once you update)
         p(v-else)
