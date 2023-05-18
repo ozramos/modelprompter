@@ -13,8 +13,6 @@ q-btn(v-if='!isLoggedIn && allowLogin && connectedToCloud' @click='showModal()' 
       q-card-actions(align='right')
         q-btn(flat @click='hideModal') Cancel
         q-space
-        q-btn(color='light' @click='hideModal') or enter Token
-        q-space
         q-btn(@click='startLogin' :loading='isWaitingForOTP') Email access token
 
     //- Get OTP
@@ -141,7 +139,7 @@ function hideModal () {
     nextTick(() => {
       $otpToken.value.focus()
     })
-  })
+  }, 0)
 }
 
 /**
