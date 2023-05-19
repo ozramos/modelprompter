@@ -209,7 +209,7 @@ async function toggleChat (disabled = false) {
   }
 
   // Update chat mode in database
-  await store.db.channels.where('id').equals(getChannelID()).modify({
+  await store.db.channels.update(getChannelID(), {
     chatModeDisabled: disabled
   })
 }

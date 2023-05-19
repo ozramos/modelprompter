@@ -41,6 +41,7 @@ import store from '/src/store/db.js'
 import {useQuasar} from 'quasar'
 import {useObservable} from '@vueuse/rxjs'
 import {liveQuery} from 'dexie'
+import {b64encode} from 'dreambase-library/dist/common/base64'
 
 const $q = useQuasar()
 const $router = useRouter()
@@ -152,15 +153,59 @@ function skipToOTP () {
 
 /**
  * Login with OTP
+ * @todo This is hideous and needs refactoring
  * @see https://github.com/dexie/Dexie.js/blob/552005de4f89cf0eb61c8195ae116cb1fd724919/addons/dexie-cloud/src/authentication/otpFetchTokenCallback.ts#LL89C7-L98C8
  */
 async function loginWithOTP () {
+  const spkiToPEM = function (keydata) {
+    const keydataB64 = b64encode(keydata);
+    const keydataB64Pem = formatAsPem(keydataB64);
+    return keydataB64Pem;
+  }
+  function formatAsPem(str) {
+    let finalString = '-----BEGIN PUBLIC KEY-----\n';
+    while (str.length > 0) {
+      finalString += str.substring(0, 64) + '\n';
+      str = str.substring(64);
+    }
+    finalString = finalString + '-----END PUBLIC KEY-----';
+    return finalString;
+  }
+
+  // Get public_key
+  // @see https://github.com/dexie/Dexie.js/blob/552005de4f89cf0eb61c8195ae116cb1fd724919/addons/dexie-cloud/src/authentication/authenticate.ts#L2
+  if (!crypto.subtle) {
+    if (typeof location !== 'undefined' && location.protocol === 'http:') {
+      throw new Error(`Dexie Cloud Addon needs to use WebCrypto, but your browser has disabled it due to being served from an insecure location. Please serve it from https or http://localhost:<port> (See https://stackoverflow.com/questions/46670556/how-to-enable-crypto-subtle-for-unsecure-origins-in-chrome/46671627#46671627)`);
+    } else {
+      throw new Error(`This browser does not support WebCrypto.`);
+    }
+  }
+  const { privateKey, publicKey } = await crypto.subtle.generateKey(
+    {
+      name: 'RSASSA-PKCS1-v1_5',
+      modulusLength: 2048,
+      publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
+      hash: { name: 'SHA-256' },
+    },
+    false, // Non-exportable...
+    ['sign', 'verify']
+  )
+  if (!privateKey || !publicKey)
+    throw new Error(`Could not generate RSA keypair`) // Typings suggest these can be undefined...
+  store.db.cloud.currentUser.nonExportablePrivateKey = privateKey //...but storable!
+  const publicKeySPKI = await crypto.subtle.exportKey('spki', publicKey)
+  const publicKeyPEM = spkiToPEM(publicKeySPKI)
+  store.db.cloud.currentUser.publicKey = publicKey
+
+  // Send OTP
   const resp = await fetch(`${store.db.cloud.options.databaseUrl}/token`, {
     body: JSON.stringify({
       email: email.value,
       otp: otpToken.value,
       otp_id: otpData.value.otp_id,
       grant_type: 'otp',
+      public_key: publicKeyPEM,
       scopes: ['ACCESS_DB']
     }),
     method: 'post',
