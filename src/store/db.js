@@ -38,7 +38,8 @@ class Store {
       await this.createChannel({
         id: 'chnSystem',
         name: 'System',
-        prompt: SystemPrompt
+        prompt: SystemPrompt,
+        chatModeDisabled: false,
       })
     }
   }
@@ -252,6 +253,7 @@ class Store {
       id: 'chnSystem',
       name: 'System',
       prompt: SystemPrompt,
+      chatModeDisabled: false,
     })
 
     if (process.env.DEXIE_DB_URL) {

@@ -3,7 +3,8 @@ q-btn.full-width.q-pl-sm(icon='chat' @click='showModal()') New Channel
   q-dialog.fullscreen(v-model='isDialogVisible')
     q-card.flex.column
       q-card-section.flex-unset
-        .text-h4 New Channel
+        .text-h4(v-if='isEditing') Edit Channel
+        .text-h4(v-else) New Channel
       q-card-section.q-pb-none
         p
           q-input(v-model='channelName' label='Channel name' outlined)
@@ -32,6 +33,7 @@ const $q = useQuasar()
 
 const $router = useRouter()
 let isEditing = ref(false)
+const channelID = ref(null)
 
 /**
  * Shows the modal and clears the message
@@ -39,7 +41,8 @@ let isEditing = ref(false)
  */
 function showModal (channel = {}) {
   isDialogVisible.value = true
-  isEditing.value = channel.id || 'chnSystem'
+  isEditing.value = !!channel.id || false
+  channelID.value = channel.id || null
 
   if (channel.id) {
     channelName.value = channel.name
@@ -64,11 +67,11 @@ async function createChannel () {
     prompt: prompt.value,
   })
 
-  // Add the prime directive
+  // Update system message
   const message = await store.createMessage({
     name: 'System',
-    channel: channel.id,
-    text: prompt.value,
+    channel: 'chnSystem',
+    text: `<p><strong>Channel created</strong>: ${channel.name}<p><strong>With prompt:</strong><pre>${channel.prompt}</pre>`,
   })
 
   // Navigate to the channel
@@ -83,9 +86,15 @@ async function createChannel () {
 async function updateChannel () {
   // Update the channel
   const channel = await store.updateChannel({
-    id: isEditing.value,
+    id: channelID.value,
     name: channelName.value,
     prompt: prompt.value,
+  })
+
+  await store.createMessage({
+    name: 'System',
+    channel: 'chnSystem',
+    text: `<p><strong>Channel updated</strong>: ${channel.name}<p><strong>With prompt:</strong><pre>${channel.prompt}</pre>`,
   })
 
   // Navigate to the channel

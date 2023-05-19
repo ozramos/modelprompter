@@ -23,10 +23,10 @@ q-page.boxed(:style-fn='() => ({ height: "calc(100vh - 50px)" })')
 
     // Input field with submit button at bottom of view
     .q-pa-md.flex.full-width
-      q-fab.q-mr-sm.notext(square direction='up' :color='isChatModeOn ? "cyan" : "dark"' icon='settings' persistent)
+      q-fab.q-mr-sm.notext(square direction='up' :color='!isChatModeDisabled ? "cyan" : "dark"' icon='settings' persistent)
         q-fab-action(color='red' icon='delete' @click='clear' label='Clear messages' external-label)
-        q-fab-action(v-if='isChatModeOn' color='blue' icon='group' @click='toggleChat(false)' external-label label='Chat mode enabled')
-        q-fab-action(v-else color='dark' icon='group_off' @click='toggleChat(true)' external-label label='Chat mode disabled')
+        q-fab-action(v-if='!isChatModeDisabled' color='blue' icon='group' @click='toggleChat(true)' external-label label='Chat mode enabled')
+        q-fab-action(v-else color='dark' icon='group_off' @click='toggleChat(false)' external-label label='Chat mode disabled')
 
       q-input.flex-auto(ref='$input' v-model='input' @keyup.enter='submit' autogrow dense style="max-height: 350px; overflow: auto")
       q-btn.q-ml-sm(color='primary' label='Send' @click='submit')
@@ -81,12 +81,12 @@ const $route = useRoute()
 watch(() => $route.params.id, async (newId = 'chnSystem') => {
   messages.value = await store.getMessagesWithSystemPrompt(newId)
   const channel = await store.db.channels.get(getChannelID())
-  isChatModeOn.value = channel?.chatModeDisabled
+  isChatModeDisabled.value = !!channel?.chatModeDisabled
 })
 onMounted(async () => {
   messages.value = await store.getMessagesWithSystemPrompt(getChannelID())
   const channel = await store.db.channels.get(getChannelID())
-  isChatModeOn.value = channel?.chatModeDisabled
+  isChatModeDisabled.value = !!channel?.chatModeDisabled
 
   // Redirect to main channel if channel doesn't exist
   if (getChannelID() !== 'chnSystem' && !messages.value.length) {
@@ -121,7 +121,7 @@ function getChannelID () {
  * Submit a message
  */
 const input = ref('')
-const isChatModeOn = ref(true)
+const isChatModeDisabled = ref(true)
 async function submit (ev) {
   // Submit if not holding down CTRL or SHIFT
   if (!ev.ctrlKey && !ev.shiftKey) {
@@ -143,7 +143,7 @@ async function submit (ev) {
     maybeScrollToBottom()
 
     // If chat mode is on, send message to AI
-    if (isChatModeOn.value) {
+    if (!isChatModeDisabled.value) {
       // Transform messages to OpenAI format
       isThinking.value = true
       const transformedMessages = llm.transformMessages(messages.value)
@@ -200,19 +200,19 @@ onMounted(() => {
 /**
  * Disable chat mode
  */
-function toggleChat (disabled = false) {
-  if (disabled) {
+async function toggleChat (disabled = false) {
+  // Update chat mode in database
+  await store.db.channels.update(getChannelID(), {
+    chatModeDisabled: disabled
+  }).then(() => {
+    isChatModeDisabled.value = disabled
+  })
+
+  if (!disabled) {
     $q.notify('Chat mode enabled')
   } else {
     $q.notify('Chat mode disabled')
   }
-
-  // Update chat mode in database
-  store.db.channels.update(getChannelID(), {
-    chatModeDisabled: disabled
-  }).then(() => {
-    isChatModeOn.value = disabled
-  })
 }
 
 /**

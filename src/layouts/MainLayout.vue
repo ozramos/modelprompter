@@ -22,14 +22,14 @@ q-layout(view='lHh Lpr lFf')
     q-list(style='overflow-y: auto; overflow-x: hidden;')
       q-item.channel-menu-item(v-for='channel in channels' :key='channel.id' v-bind='channel' clickable :to='{ name: "channel", params: { id: channel.id } }')
         q-item-section(avatar)
-          q-icon(v-if='channel.icon' :name='channel.icon')
+          q-icon(v-if='channel.id === "chnSystem"' name='hive')
           q-icon(v-else name='chat')
         q-item-section
           q-item-label(lines=1) {{ channel.name }}
           q-item-label(v-if='channel.caption' caption) {{ channel.caption }}
         q-item-section
           q-btn(rel='edit' flat dense icon='edit' aria-label='Edit' @click='ev => editChannel(ev, channel)')
-          q-btn(rel='delete' flat dense icon='delete' aria-label='Delete' @click='ev => deleteChannel(ev, channel)')
+          q-btn(v-if='channel.id !== "chnSystem"' rel='delete' flat dense icon='delete' aria-label='Delete' @click='ev => deleteChannel(ev, channel)')
         q-menu(touch-position context-menu @show='ev => ev.preventDefault() && ev.stopPropagation()')
           q-btn(rel='edit' flat icon='edit' aria-label='Edit' @click='ev => editChannel(ev, channel)')
           q-btn(rel='delete' flat round icon='delete' aria-label='Delete' @click='ev => deleteChannel(ev, channel)')
@@ -60,7 +60,16 @@ import {useRouter} from 'vue-router'
 const $q = useQuasar()
 const $router = useRouter()
 const channels = useObservable(liveQuery(async () => {
-  return await store.getChannels()
+  const channels = await store.getChannels()
+
+  // Move id: chnSystem to the beginning
+  const systemChannel = channels.find(c => c.id === 'chnSystem')
+  if (systemChannel) {
+    channels.splice(channels.indexOf(systemChannel), 1)
+    channels.unshift(systemChannel)
+  }
+
+  return channels
 }))
 
 /**
@@ -87,6 +96,13 @@ function editChannel (ev, channel) {
  */
 async function deleteChannel (ev, channel) {
   await store.deleteChannel(channel.id)
+
+  await store.createMessage({
+    name: 'System',
+    channel: 'chnSystem',
+    text: `<strong>Channel deleted</strong>: ${channel.name}`,
+  })
+
   $q.notify({
     message: `Deleted channel ${channel.name}`,
   })
