@@ -38,13 +38,13 @@ q-page.boxed(:style-fn='() => ({ height: "calc(100vh - 50px)" })')
 //- Edit message
 q-dialog(v-model='isEditingMessage')
   //- Get Email
-  q-card(style='height: auto !important; min-width: 350px; max-width: 600px !important; width: auto !important;')
+  q-card(style='height: auto !important; min-width: 350px; width: 100% !important;')
     q-card-section
       .text-h4 Edit message
     q-card-section
-      q-input.flex-auto(ref='$editInput' v-model='newMessageText' @keyup.enter='updateMessage' autogrow dense style="overflow: auto")
+      q-input.flex-auto(ref='$editInput' v-model='newMessageText' autogrow dense style="overflow: auto")
     q-card-actions(align='right')
-      q-btn(flat @click='messageBeingEdited = false') Cancel
+      q-btn(flat @click='isEditingMessage = false') Cancel
       q-space
       q-btn(@click='updateMessage') Update message
 </template>
@@ -236,9 +236,31 @@ async function toggleChat (disabled = false) {
 /**
  * Apply markdown
  */
-const formattedMessage = computed(() => {
+const formattedMessage = computed((message) => {
   return messages.value.reduce((msg, item) => {
-    msg[item.id] = DOMPurify.sanitize(md.render(item.text), { ADD_TAGS: ['iframe'], ADD_ATTR: ['allow', 'allowfullscreen', 'frameborder', 'scrolling'] })
+    // msg[item.id] = DOMPurify.sanitize(md.render(item.text), { ADD_TAGS: ['iframe'], ADD_ATTR: ['allow', 'allowfullscreen', 'frameborder', 'scrolling'] })
+    msg[item.id] = md.render(item.text)
+
+    // Extract naked script tag and run it
+    const script = msg[item.id].match(/<script>([\s\S]*)<\/script>/)
+    if (script) {
+      nextTick(() => {
+        const scriptEl = document.createElement('script')
+        scriptEl.innerHTML = script[1]
+        document.body.appendChild(scriptEl)
+      })
+    }
+
+    // Manually load script tags with src
+    const scriptSrc = msg[item.id].match(/<script src="(.*)"><\/script>/)
+    if (scriptSrc) {
+      nextTick(() => {
+        const scriptEl = document.createElement('script')
+        scriptEl.src = scriptSrc[1]
+        document.body.appendChild(scriptEl)
+      })
+    }
+
     return msg
   }, {})
 })
