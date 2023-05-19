@@ -5,16 +5,20 @@ q-page.boxed(:style-fn='() => ({ height: "calc(100vh - 50px)" })')
   div.column(style='height: 100%;')
     // Chat area
     .full-width.col.q-pa-md(ref='$messages' style='overflow: auto')
-      q-chat-message(
-        v-for='message in messages'
-        :key='message.id'
-        :text-html='true'
-        :text='[formattedMessage[message.id]]'
-        :bg-color='getChatBg(message)'
-        :text-color='message.sent ? "white" : "black"'
-        :stamp='formatDate(message.created || message.updated)'
-        :sent='message.name === "System"'
-      )
+      div(v-for='message in messages')
+        q-chat-message(
+          :key='message.id'
+          :text-html='true'
+          :text='[formattedMessage[message.id]]'
+          :bg-color='getChatBg(message)'
+          :text-color='message.sent ? "white" : "black"'
+          :stamp='formatDate(message.created || message.updated)'
+          :sent='message.name === "System"'
+        )
+        q-menu(touch-position context-menu auto-close @show='ev => ev.preventDefault() && ev.stopPropagation()')
+          q-btn(rel='edit' flat icon='edit' aria-label='Edit' @click='ev => editMessage(ev, message)')
+          q-btn(rel='delete' flat round icon='delete' aria-label='Delete' @click='ev => deleteMessage(ev, message)')
+
       q-chat-message(
         v-if='isThinking'
         bg-color='negative'
@@ -224,4 +228,19 @@ const formattedMessage = computed(() => {
     return msg
   }, {})
 })
+
+/**
+ * Edit message
+ */
+async function editMessage (ev, message) {
+  console.log('editMessage', ev, message)
+}
+
+/**
+ * Delete message
+ */
+async function deleteMessage (ev, message) {
+  await store.db.messages.delete(message.id)
+  messages.value = await store.getMessagesWithSystemPrompt(getChannelID())
+}
 </script>
