@@ -16,7 +16,7 @@ q-page.boxed(:style-fn='() => ({ height: "calc(100vh - 50px)" })')
           :sent='message.name === "System"'
         )
         q-menu(touch-position context-menu auto-close @show='ev => ev.preventDefault() && ev.stopPropagation()')
-          q-btn(rel='edit' flat icon='edit' aria-label='Edit' @click='ev => editMessage(ev, message)')
+          q-btn(rel='edit' flat icon='edit' aria-label='Edit' @click='ev => showEditMessage(ev, message)')
           q-btn(rel='delete' flat round icon='delete' aria-label='Delete' @click='ev => deleteMessage(ev, message)')
 
       q-chat-message(
@@ -34,12 +34,25 @@ q-page.boxed(:style-fn='() => ({ height: "calc(100vh - 50px)" })')
 
       q-input.flex-auto(ref='$input' v-model='input' @keyup.enter='submit' autogrow dense style="max-height: 350px; overflow: auto")
       q-btn.q-ml-sm(color='primary' label='Send' @click='submit')
+
+//- Edit message
+q-dialog(v-model='isEditingMessage')
+  //- Get Email
+  q-card(style='height: auto !important; min-width: 350px; max-width: 600px !important; width: auto !important;')
+    q-card-section
+      .text-h4 Edit message
+    q-card-section
+      q-input.flex-auto(ref='$editInput' v-model='newMessageText' @keyup.enter='updateMessage' autogrow dense style="overflow: auto")
+    q-card-actions(align='right')
+      q-btn(flat @click='messageBeingEdited = false') Cancel
+      q-space
+      q-btn(@click='updateMessage') Update message
 </template>
 
 
 
 <script setup>
-import {ref, onMounted, watch, computed} from 'vue'
+import {ref, onMounted, watch, computed, nextTick} from 'vue'
 import {useObservable} from '@vueuse/rxjs'
 import {liveQuery} from 'dexie'
 import store from '/src/store/db.js'
@@ -51,6 +64,7 @@ import DOMPurify from 'dompurify'
 
 const $q = useQuasar()
 const $messages = ref(null)
+const messageBeingEdited = ref(true)
 
 /**
  * Handle messages
@@ -232,8 +246,32 @@ const formattedMessage = computed(() => {
 /**
  * Edit message
  */
-async function editMessage (ev, message) {
-  console.log('editMessage', ev, message)
+const $editInput = ref(null)
+async function showEditMessage (ev, message) {
+  newMessageText.value = message.text
+  messageBeingEdited.value = message
+  isEditingMessage.value = true
+
+  // Focus input
+  await nextTick()
+  setTimeout(() => {
+    $editInput.value.focus()
+  }, 10)
+}
+
+/**
+ * Update message
+ */
+const newMessageText = ref('')
+const isEditingMessage = ref(false)
+
+async function updateMessage () {
+  await store.db.messages.update(messageBeingEdited.value.id, {
+    text: newMessageText.value
+  })
+  messages.value = await store.getMessagesWithSystemPrompt(getChannelID())
+  messageBeingEdited.value = null
+  isEditingMessage.value = false
 }
 
 /**
