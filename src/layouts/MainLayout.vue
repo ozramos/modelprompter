@@ -66,9 +66,9 @@ import {useRouter} from 'vue-router'
 
 const $q = useQuasar()
 const $router = useRouter()
-const channels = ref(useObservable(liveQuery(async () => {
+const channels = useObservable(liveQuery(async () => {
   return await store.getChannels()
-})))
+}))
 
 /**
  * Toggle sidebar

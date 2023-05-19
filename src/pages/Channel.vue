@@ -52,9 +52,9 @@ const $messages = ref(null)
  * Handle messages
  */
 let isThinking = ref(false)
-const messages = ref(useObservable(liveQuery(async () => {
+const messages = useObservable(liveQuery(async () => {
   return await store.getMessagesWithSystemPrompt(getChannelID())
-})))
+}))
 
 watch(messages, () => {
   setTimeout(() => {maybeScrollToBottom(true)}, 0)
@@ -78,19 +78,19 @@ function maybeScrollToBottom (force = false) {
  */
 const $router = useRouter()
 const $route = useRoute()
-watch(() => $route.params.id, async (newId = 0) => {
+watch(() => $route.params.id, async (newId = 'chnSystem') => {
   messages.value = await store.getMessagesWithSystemPrompt(newId)
   const channel = await store.db.channels.get(getChannelID())
-  isChatModeOn.value = !channel?.chatModeDisabled
+  isChatModeOn.value = channel.chatModeDisabled
 })
 onMounted(async () => {
   messages.value = await store.getMessagesWithSystemPrompt(getChannelID())
   const channel = await store.db.channels.get(getChannelID())
-  isChatModeOn.value = !channel?.chatModeDisabled
+  isChatModeOn.value = channel.chatModeDisabled
 
   // Redirect to main channel if channel doesn't exist
   if (getChannelID() && !messages.value.length) {
-    $router.push({name: 'system', params: {id: 0}})
+    $router.push({name: 'system', params: {id: 'chnSystem'}})
   }
 })
 
@@ -114,7 +114,7 @@ function formatDate (date) {
 
 // Computed channel ID (when route changes)
 function getChannelID () {
-  return $router.currentRoute.value.params.id || 0
+  return $router.currentRoute.value.params.id || 'chnSystem'
 }
 
 /**
@@ -200,8 +200,7 @@ onMounted(() => {
 /**
  * Disable chat mode
  */
-async function toggleChat (disabled = false) {
-  isChatModeOn.value = disabled
+function toggleChat (disabled = false) {
   if (disabled) {
     $q.notify('Chat mode enabled')
   } else {
@@ -209,8 +208,10 @@ async function toggleChat (disabled = false) {
   }
 
   // Update chat mode in database
-  await store.db.channels.update(getChannelID(), {
+  store.db.channels.update(getChannelID(), {
     chatModeDisabled: disabled
+  }).then(() => {
+    isChatModeOn.value = disabled
   })
 }
 
