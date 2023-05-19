@@ -18,13 +18,6 @@ q-layout(view='lHh Lpr lFf')
       q-item-label(header)
         | Channels
 
-      //- System channel
-      q-item(clickable to='/')
-        q-item-section(avatar)
-          q-icon(name='hive')
-        q-item-section
-          q-item-label System
-
     //- Links
     q-list(style='overflow-y: auto; overflow-x: hidden;')
       q-item.channel-menu-item(v-for='channel in channels' :key='channel.id' v-bind='channel' clickable :to='{ name: "channel", params: { id: channel.id } }')

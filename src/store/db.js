@@ -18,16 +18,27 @@ class Store {
     if (process.env.DEXIE_DB_URL) {
       storeConfig.realms = '@realmId'
       // Next: 5
-      store.db.version(3).stores(storeConfig)
+      await store.db.version(3).stores(storeConfig)
     } else {
       // Next: 4
-      store.db.version(2).stores(storeConfig)
+      await store.db.version(2).stores(storeConfig)
     }
 
+    // Only even connect if we have a url
     if (process.env.DEXIE_DB_URL) {
-      this.db.cloud.configure({
+      await this.db.cloud.configure({
         databaseUrl: process.env.DEXIE_DB_URL,
         customLoginGui: true,
+      })
+    }
+
+    // Create default channel
+    const channels = await this.db.channels.toArray()
+    if (!channels.length) {
+      await this.createChannel({
+        id: 'chnSystem',
+        name: 'System',
+        prompt: SystemPrompt
       })
     }
   }
@@ -235,6 +246,13 @@ class Store {
     for (const setting of settings) {
       await this.db.settings.delete(setting.id).catch(this.error)
     }
+
+    // Create default channel
+    await this.createChannel({
+      id: 'chnSystem',
+      name: 'System',
+      prompt: SystemPrompt,
+    })
 
     if (process.env.DEXIE_DB_URL) {
       this.db.cloud.sync()

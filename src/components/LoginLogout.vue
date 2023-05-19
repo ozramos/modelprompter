@@ -65,13 +65,16 @@ const allowLogin = !!Number(process.env.ALLOW_LOGIN)
  * Listen for logged in user change
  */
 const isLoggedIn = ref(false)
-const user = useObservable(store.db?.cloud?.currentUser || {})
+const user = useObservable(liveQuery(() => store.db.cloud.currentUser) || {})
 watch(user, () => {
   isLoggedIn.value = store.db.cloud.currentUserId && store.db.cloud.currentUserId !== 'unauthorized'
 
   if (hasManuallyLoggedIn.value && isLoggedIn.value) {
     $q.notify({message: 'Logged in'})
   }
+})
+onMounted(() => {
+  isLoggedIn.value = store.db.cloud.currentUserId && store.db.cloud.currentUserId !== 'unauthorized'
 })
 
 /**

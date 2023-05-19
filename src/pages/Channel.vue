@@ -81,16 +81,16 @@ const $route = useRoute()
 watch(() => $route.params.id, async (newId = 'chnSystem') => {
   messages.value = await store.getMessagesWithSystemPrompt(newId)
   const channel = await store.db.channels.get(getChannelID())
-  isChatModeOn.value = channel.chatModeDisabled
+  isChatModeOn.value = channel?.chatModeDisabled
 })
 onMounted(async () => {
   messages.value = await store.getMessagesWithSystemPrompt(getChannelID())
   const channel = await store.db.channels.get(getChannelID())
-  isChatModeOn.value = channel.chatModeDisabled
+  isChatModeOn.value = channel?.chatModeDisabled
 
   // Redirect to main channel if channel doesn't exist
-  if (getChannelID() && !messages.value.length) {
-    $router.push({name: 'system', params: {id: 'chnSystem'}})
+  if (getChannelID() !== 'chnSystem' && !messages.value.length) {
+    $router.push({name: 'system'})
   }
 })
 

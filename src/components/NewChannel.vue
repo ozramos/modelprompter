@@ -39,7 +39,7 @@ let isEditing = ref(false)
  */
 function showModal (channel = {}) {
   isDialogVisible.value = true
-  isEditing.value = channel.id || 0
+  isEditing.value = channel.id || 'chnSystem'
 
   if (channel.id) {
     channelName.value = channel.name
