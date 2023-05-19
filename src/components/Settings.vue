@@ -48,7 +48,7 @@ const allowRegistration = !!Number(process.env.ALLOW_REGISTRATION)
  * Listen for logged in user change
  */
 const isLoggedIn = ref(false)
-const user = ref(useObservable(store.db?.cloud?.currentUser || {}))
+const user = useObservable(store.db?.cloud?.currentUser || {})
 watch(user, () => {
   isLoggedIn.value = store.db.cloud.currentUserId && store.db.cloud.currentUserId !== 'unauthorized'
 })
@@ -79,9 +79,9 @@ async function updateSettings () {
 /**
  * Set initial settings
  */
-const settings = ref(useObservable(liveQuery(async () => {
+const settings = useObservable(liveQuery(async () => {
   return await store.getSettings()
-})))
+}))
 
 onMounted(async () => {
   const settings = await store.getSettings()
@@ -92,8 +92,10 @@ onMounted(async () => {
 /**
  * Export database
  */
-function exportDatabase () {
-  store.exportDatabase()
+async function exportDatabase () {
+  await store.exportDatabase()
+  hideModal()
+  $q.notify({message: 'Database exported'})
 }
 
 /**
@@ -112,6 +114,6 @@ async function importDatabase (ev) {
 async function deleteDatabase () {
   await store.deleteDatabase()
   $router.push('/')
-  window.location.reload()
+  hideModal()
 }
 </script>
