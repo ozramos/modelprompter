@@ -25,6 +25,12 @@ q-page.boxed(:style-fn='() => ({ height: "calc(100vh - 50px)" })')
       )
         q-spinner-dots(size='2rem')
 
+    .full-width.col.q-pa-md(v-if="isEditingMessage" style='overflow: auto')
+      MonacoEditor(
+        :options="monacoOptions"
+        v-model:value="newMessageText"
+      )
+
     // Input field with submit button at bottom of view
     .q-pa-md.flex.full-width
       q-fab.q-mr-sm.notext(square direction='up' :color='!isChatModeDisabled ? "cyan" : "dark"' icon='settings' persistent)
@@ -33,21 +39,33 @@ q-page.boxed(:style-fn='() => ({ height: "calc(100vh - 50px)" })')
         q-fab-action(v-else color='dark' icon='group_off' @click='toggleChat(false)' external-label label='Chat mode disabled')
         q-fab-action(color='green' icon='publish' @click='publishChannel' label='Publish Channel' external-label)
 
-      q-input.flex-auto(ref='$input' v-model='input' type='textarea' @keyup.enter='submit' autogrow dense style="max-height: 350px; overflow: auto")
-      q-btn.q-ml-sm(color='primary' label='Send' @click='submit')
+      q-input.flex-auto(v-if='!isEditingMessage' ref='$input' v-model='input' type='textarea' @keyup.enter='submit' autogrow dense style="max-height: 350px; overflow: auto")
+      q-btn(v-if='isEditingMessage' color='red' @click='isEditingMessage = false') Cancel
+      q-space(v-if='isEditingMessage')
+      q-btn(v-if='isEditingMessage' @click='updateMessage') Update message
+      q-btn.q-ml-sm(v-if='!isEditingMessage' color='primary' label='Send' @click='submit')
 
 //- Edit message
-q-dialog(v-model='isEditingMessage')
-  //- Get Email
-  q-card(style='height: auto !important; min-width: 350px; width: 100% !important;')
-    q-card-section
-      .text-h4 Edit message
-    q-card-section
-      q-input.flex-auto(ref='$editInput' v-model='newMessageText' autogrow dense style="overflow: auto")
-    q-card-actions(align='right')
-      q-btn(flat @click='isEditingMessage = false') Cancel
-      q-space
-      q-btn(@click='updateMessage') Update message
+//- q-page.boxed(v-else:style-fn='() => ({ height: "calc(100vh - 50px)" })')
+//-   //- q-dialog(v-model='isEditingMessage')
+//-   q-card(style='height: auto !important; min-width: 350px; width: 100% !important;')
+//-     q-card-section
+//-       .text-h4 Edit message
+//-     q-card-section
+//-       MonacoEditor(
+//-         rel="$monacoEditor"
+//-         theme="vs"
+//-         :options="monacoOptions"
+//-         language="javascript"
+//-         :width="800"
+//-         :height="600"
+//-         v-model:value="newMessageText"
+//-       )
+//-       q-input.flex-auto(ref='$editInput' v-model='newMessageText' autogrow dense style="overflow: auto")
+//-     q-card-actions(align='right')
+//-       q-btn(flat @click='isEditingMessage = false') Cancel
+//-       q-space
+//-       q-btn(@click='updateMessage') Update message
 </template>
 
 
@@ -62,10 +80,17 @@ import { useRouter, useRoute } from 'vue-router'
 import {useQuasar} from 'quasar'
 import md from '/src/boot/markdown.js'
 import DOMPurify from 'dompurify'
+import MonacoEditor from 'monaco-editor-vue3'
 
 const $q = useQuasar()
 const $messages = ref(null)
 const messageBeingEdited = ref(true)
+const $monacoEditor = ref(null)
+const monacoOptions = {
+  colorDecorators: true,
+  lineHeight: 24,
+  tabSize: 2,
+}
 
 /**
  * Handle messages
@@ -293,6 +318,7 @@ async function showEditMessage (ev, message) {
   newMessageText.value = message.text
   messageBeingEdited.value = message
   isEditingMessage.value = true
+  console.log($monacoEditor)
 
   // Focus input
   await nextTick()

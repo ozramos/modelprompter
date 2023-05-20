@@ -9,7 +9,6 @@
 // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js
 
 const { configure } = require('quasar/wrappers')
-
 module.exports = configure(function (/* ctx */) {
   return {
 
@@ -26,7 +25,8 @@ module.exports = configure(function (/* ctx */) {
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#css
     css: [
-      'app.sass'
+      'app.sass',
+      'monaco.sass'
     ],
 
     // https://github.com/quasarframework/quasar/tree/dev/extras
@@ -67,8 +67,10 @@ module.exports = configure(function (/* ctx */) {
       // polyfillModulePreload: true,
       // distDir
 
-      // extendViteConf (viteConf) {},
       // viteVuePluginOptions: {},
+      extendViteConf (viteConf) {
+        return viteConf
+      },
 
 
       vitePlugins: [
