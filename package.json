@@ -9,6 +9,7 @@
     "start": "quasar dev",
     "dev": "quasar dev",
     "build": "quasar build",
+    "cloud:export": "npx dexie-cloud export dexie-export.json",
     "test": "echo \"No test specified\" && exit 0"
   },
   "dependencies": {

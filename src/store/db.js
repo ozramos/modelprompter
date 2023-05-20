@@ -14,14 +14,13 @@ class Store {
   async setup () {
     this.db = await new Dexie('chat', {addons: [dexieCloud]})
 
-    // Versions need to be upgraded by 2 to account for online/offline
     if (process.env.DEXIE_DB_URL) {
       storeConfig.realms = '@realmId'
-      // Next: 5
-      await store.db.version(3).stores(storeConfig)
+      storeConfig.members = '@id,realmId,email'
+      storeConfig.roles = '[realmId+name]'
+      await store.db.version(21).stores(storeConfig)
     } else {
-      // Next: 4
-      await store.db.version(2).stores(storeConfig)
+      await store.db.version(22).stores(storeConfig)
     }
 
     // Only even connect if we have a url
@@ -81,8 +80,8 @@ class Store {
    * Get Channels
    */
   async getChannels () {
-    return await this.db.channels.toArray()
-      .catch(this.error)
+    const channels = await this.db.channels.toArray()
+    return channels
   }
 
   /**
@@ -267,6 +266,63 @@ class Store {
   async isLoggedIn () {
     return this.db.cloud.currentUserId != 'unauthorized'
   }
+
+  /**
+   * Publish channel
+   * - Clone channel to realmId: rlm-public
+   * - Add "publishedTo" property to that cloned channel ID
+   * - Adds "published-to" to channel ID
+   */
+  async publishChannel (channelID) {
+    // Make channel public
+    let channel = await this.db.channels.get(channelID)
+    // await this.db.channels.update(channel.id, {
+    //   realmId: 'rlm-public',
+    //   ownder: null
+    // })
+    // channel = await this.db.channels.get(channelID)
+    channel.realmId = 'rlm-public'
+    channel.owner = 'rlm-public'
+    channel.id += '__public'
+    await this.db.channels.put(channel)
+    channel = await this.db.channels.get(channelID + '__public')
+    console.log(channel)
+
+
+  //   // clone channel
+  //   let channel = await this.db.channels.get(channelID)
+  //   let clone = Object.assign({}, channel)
+  //   const realmId = 'rlm-public'
+
+  //   clone.id = `${channelID}-${realmId}`
+  //   clone.realmId = realmId
+  //   clone.publishedFrom = channel.id
+  //   channel.publishedTo = clone.id
+
+  //   const existingChannel = await this.db.messages.get(clone.id)
+
+  //   let cloneID
+  //   if (existingChannel) {
+  //     cloneID = await this.db.channels.update(clone.id, clone)
+  //   } else {
+  //     cloneID = await this.db.channels.add(clone)
+  //   }
+  //   clone = await this.db.channels.get(cloneID)
+  //   await this.db.channels.put(channel)
+
+  //   console.log(clone)
+
+  //   // clone messages
+  //   const messages = await this.db.messages.where({ channel: channelID }).toArray()
+  //   for (const message of messages) {
+  //     const cloneMessage = Object.assign({}, message)
+  //     cloneMessage.id = `${message.id}-${realmId}`
+  //     cloneMessage.realmId = realmId
+  //     cloneMessage.publishedFrom = message.id
+  //     cloneMessage.owner = null
+  //     cloneMessage.channel = clone.id
+  //   }
+  }
 }
 const store = new Store()
 
@@ -277,9 +333,9 @@ const store = new Store()
 // Configure store after export
 export default store
 const storeConfig = {
-  channels: '@id, name',
-  messages: '@id, channel, timestamp, from, to, message',
-  settings: '@id, key, value',
+  channels: '@id, realmId, name, publishedFrom, publishedTo, updated',
+  messages: '@id, realmId, channel, timestamp, from, to',
+  settings: '@id, realmId, key, value',
 }
 
 

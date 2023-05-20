@@ -31,8 +31,9 @@ q-page.boxed(:style-fn='() => ({ height: "calc(100vh - 50px)" })')
         q-fab-action(color='red' icon='delete' @click='clear' label='Clear messages' external-label)
         q-fab-action(v-if='!isChatModeDisabled' color='blue' icon='group' @click='toggleChat(true)' external-label label='Chat mode enabled')
         q-fab-action(v-else color='dark' icon='group_off' @click='toggleChat(false)' external-label label='Chat mode disabled')
+        q-fab-action(color='green' icon='publish' @click='publishChannel' label='Publish Channel' external-label)
 
-      q-input.flex-auto(ref='$input' v-model='input' @keyup.enter='submit' autogrow dense style="max-height: 350px; overflow: auto")
+      q-input.flex-auto(ref='$input' v-model='input' type='textarea' @keyup.enter='submit' autogrow dense style="max-height: 350px; overflow: auto")
       q-btn.q-ml-sm(color='primary' label='Send' @click='submit')
 
 //- Edit message
@@ -145,13 +146,14 @@ async function submit (ev) {
   if (!ev.ctrlKey && !ev.shiftKey) {
     // Create the message
     // Remove last newline
-    input.value = input.value.replace(/\n/g, '')
+    input.value = input.value.replace(/\n$/, '')
     const message = await store.createMessage({
       name: 'User',
       text: input.value,
       channel: getChannelID(),
       sent: true
     })
+    console.log(input.value)
 
     // Add message to chat
     messages.value.push(message)
@@ -264,6 +266,13 @@ const formattedMessage = computed((message) => {
     return msg
   }, {})
 })
+
+/**
+ * Publish channel
+ */
+function publishChannel () {
+  store.publishChannel(getChannelID())
+}
 
 /**
  * Edit message
