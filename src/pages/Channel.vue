@@ -253,6 +253,17 @@ const formattedMessage = computed((message) => {
       })
     }
 
+    // Do same for modules
+    const scriptModule = msg[item.id].match(/<script type="module">([\s\S]*)<\/script>/)
+    if (scriptModule) {
+      nextTick(() => {
+        const scriptEl = document.createElement('script')
+        scriptEl.type = 'module'
+        scriptEl.innerHTML = scriptModule[1]
+        document.body.appendChild(scriptEl)
+      })
+    }
+
     // Manually load script tags with src
     const scriptSrc = msg[item.id].match(/<script src="(.*)"><\/script>/)
     if (scriptSrc) {

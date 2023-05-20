@@ -24,6 +24,7 @@
     "highlight.js": "^11.8.0",
     "langchain": "^0.0.69",
     "markdown-it": "^13.0.1",
+    "monaco-editor": "^0.38.0",
     "pug": "^3.0.2",
     "quasar": "^2.6.0",
     "vue": "^3.0.0",
