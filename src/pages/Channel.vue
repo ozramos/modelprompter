@@ -27,6 +27,7 @@ q-page.boxed(:style-fn='() => ({ height: "calc(100vh - 50px)" })')
 
     .full-width.col.q-pa-md(v-if="isEditingMessage" style='overflow: auto')
       MonacoEditor(
+        ref='$monacoEditor'
         :options="monacoOptions"
         v-model:value="newMessageText"
       )
@@ -44,28 +45,6 @@ q-page.boxed(:style-fn='() => ({ height: "calc(100vh - 50px)" })')
       q-space(v-if='isEditingMessage')
       q-btn(v-if='isEditingMessage' @click='updateMessage') Update message
       q-btn.q-ml-sm(v-if='!isEditingMessage' color='primary' label='Send' @click='submit')
-
-//- Edit message
-//- q-page.boxed(v-else:style-fn='() => ({ height: "calc(100vh - 50px)" })')
-//-   //- q-dialog(v-model='isEditingMessage')
-//-   q-card(style='height: auto !important; min-width: 350px; width: 100% !important;')
-//-     q-card-section
-//-       .text-h4 Edit message
-//-     q-card-section
-//-       MonacoEditor(
-//-         rel="$monacoEditor"
-//-         theme="vs"
-//-         :options="monacoOptions"
-//-         language="javascript"
-//-         :width="800"
-//-         :height="600"
-//-         v-model:value="newMessageText"
-//-       )
-//-       q-input.flex-auto(ref='$editInput' v-model='newMessageText' autogrow dense style="overflow: auto")
-//-     q-card-actions(align='right')
-//-       q-btn(flat @click='isEditingMessage = false') Cancel
-//-       q-space
-//-       q-btn(@click='updateMessage') Update message
 </template>
 
 
@@ -85,11 +64,55 @@ import MonacoEditor from 'monaco-editor-vue3'
 const $q = useQuasar()
 const $messages = ref(null)
 const messageBeingEdited = ref(true)
-const $monacoEditor = ref(null)
 const monacoOptions = {
   colorDecorators: true,
   lineHeight: 24,
   tabSize: 2,
+
+  theme: {
+    base: 'vs-dark',
+    inherit: true,
+    rules: [
+      { token: '', foreground: '9EFFFF', background: '9EFFFF' },
+      // { token: 'invalid', foreground: 'ff0000' },
+      { token: 'emphasis', fontStyle: 'italic' },
+      { token: 'strong', fontStyle: 'bold' },
+
+      { token: 'variable', foreground: 'ff0000' },
+      // { token: 'variable.predefined', foreground: 'ff0000' },
+      { token: 'variable.parameter', foreground: '9EFFFF' },
+      // { token: 'constant', foreground: 'ff0000' },
+      { token: 'comment', foreground: 'B362FF' },
+      { token: 'number', foreground: 'FF628C' },
+      { token: 'number.hex', foreground: 'FF628C' },
+      { token: 'regexp', foreground: 'FB94FF' },
+      // { token: 'annotation', foreground: 'ff0000' },
+      { token: 'type', foreground: '9EFFFF' },
+
+      { token: 'delimiter', foreground: 'ffffff' },
+
+      { token: 'attribute.name', foreground: 'ff0000' },
+      { token: 'attribute.value', foreground: 'ff0000' },
+
+      { token: 'string', foreground: 'A5FF90' },
+
+      { token: 'keyword', foreground: 'FF9D00' }
+    ],
+
+    // @see https://code.visualstudio.com/api/references/theme-color
+    colors: {
+      'editorIndentGuide.background': '#A599E90F',
+      'editorIndentGuide.activeBackground': '#A599E942',
+      'editor.background': '#2d2b55',
+      'editor.foreground': '#ffffff',
+      'editor.selectionBackground': '#7448af',
+      'editor.lineHighlightBackground': '#1f1f41',
+      'editorCursor.foreground': '#fad000',
+      'editorWhitespace.foreground': 'red'
+    }
+  },
+  automaticLayout: true,
+  minimap: {enabled: false}
 }
 
 /**
@@ -137,6 +160,7 @@ onMounted(async () => {
     $router.push({name: 'system'})
   }
 })
+
 
 /**
  * Format date to YYYY-MM-DD HH:MM
@@ -313,7 +337,7 @@ function publishChannel () {
 /**
  * Edit message
  */
-const $editInput = ref(null)
+const $monacoEditor = ref(null)
 async function showEditMessage (ev, message) {
   newMessageText.value = message.text
   messageBeingEdited.value = message
@@ -323,7 +347,7 @@ async function showEditMessage (ev, message) {
   // Focus input
   await nextTick()
   setTimeout(() => {
-    $editInput.value.focus()
+    $monacoEditor.value.editor.focus()
   }, 10)
 }
 
