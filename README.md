@@ -1,6 +1,6 @@
 # ModelPrompter
 
-A moddable LangChain/autoGPT powered Ai "everything app"
+A chat and gesture driven, DIY "everything app"
 
 ---
 
@@ -77,11 +77,27 @@ npm start
 npm run build
 ```
 
+# Building
+## Static site
+```
+# Just build
+npm run build
+
+# Build and test
+npm run test
+```
+
+# Cloud
+coming soon
+
+## Extra setup
+- `npx dexie-cloud connect`
+- `npx dexie-cloud whitelist http://localhost:9000 http://localhost:8000` etc
+- Local cloud setup soon
 
 # Troubleshooting
 
-
-# Database Schema
+# Database Schema (out of date)
 The core database is currently powered by IndexedDB via [Dexie.js](https://dexie.org/):
 
 ```bash
