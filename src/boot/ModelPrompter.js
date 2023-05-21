@@ -7,9 +7,15 @@ import cssWorker from 'monaco-editor/esm/vs/language/css/css.worker?worker'
 import htmlWorker from 'monaco-editor/esm/vs/language/html/html.worker?worker'
 import tsWorker from 'monaco-editor/esm/vs/language/typescript/ts.worker?worker'
 
+import {debounce, throttle} from 'quasar'
+
 export default boot(async ({ app }) => {
 
   globalThis.mp = await {
+    util: {
+      throttle,
+      debounce,
+    },
     store,
     env: {
       LOGO_SMALL: process.env.LOGO_SMALL,

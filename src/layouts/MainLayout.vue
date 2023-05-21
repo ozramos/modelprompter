@@ -48,7 +48,7 @@ q-layout(view='lHh Lpr lFf')
 </template>
 
 <script setup>
-import {ref} from 'vue'
+import {ref, watch} from 'vue'
 import {useObservable} from '@vueuse/rxjs'
 import {liveQuery} from 'dexie'
 import pkg from '/package.json'
@@ -58,6 +58,7 @@ import Settings from '/src/components/Settings.vue'
 import LoginLogout from '/src/components/LoginLogout.vue'
 import {useQuasar} from 'quasar'
 import {useRouter} from 'vue-router'
+import {debounce} from 'quasar'
 
 const connectedToCloud = !!process.env.DEXIE_DB_URL
 const allowLogin = !!Number(process.env.ALLOW_LOGIN)
@@ -94,9 +95,29 @@ const channels = useObservable(liveQuery(async () => {
 }))
 
 /**
- * Sidebar tree
+ * Update sort property on channels
  */
-const sidebarTree = ref()
+const sidebarTree = ref([])
+const updateSort = debounce((newTree) => {
+  const tree = newTree[0].children
+  let channels = tree.map(c => c.channel)
+
+  // Move system to front
+  const systemChannel = channels.find(c => c.id === 'chnSystem')
+  if (systemChannel) {
+    channels.splice(channels.indexOf(systemChannel), 1)
+    channels.unshift(systemChannel)
+  }
+
+  // Update sort property
+  channels = channels.map((c, i) => {
+    c.sort = i
+    return c
+  })
+
+  store.updateSorts(channels)
+}, 500, {leading: false, trailing: true})
+watch(sidebarTree, updateSort, {deep: true})
 
 /**
  * Toggle sidebar
