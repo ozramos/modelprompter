@@ -20,19 +20,21 @@ q-layout(view='lHh Lpr lFf')
 
     //- Links
     q-list(style='overflow-y: auto; overflow-x: hidden;')
-      q-item.channel-menu-item(v-for='channel in channels' :key='channel.id' v-bind='channel' clickable :to='{ name: "channel", params: { id: channel.id } }')
-        q-item-section(avatar)
-          q-icon(v-if='channel.id === "chnSystem"' name='hive')
-          q-icon(v-else :name='channel.realmId === "rlm-public" ? "public" : "chat"')
-        q-item-section
-          q-item-label(lines=1) {{ channel.name }}
-          q-item-label(v-if='channel.caption' caption) {{ channel.caption }}
-        q-item-section
-          q-btn(rel='edit' flat dense icon='edit' aria-label='Edit' @click='ev => editChannel(ev, channel)')
-          q-btn(v-if='channel.id !== "chnSystem"' rel='delete' flat dense icon='delete' aria-label='Delete' @click='ev => deleteChannel(ev, channel)')
-        q-menu(touch-position context-menu @show='ev => ev.preventDefault() && ev.stopPropagation()')
-          q-btn(rel='edit' flat icon='edit' aria-label='Edit' @click='ev => editChannel(ev, channel)')
-          q-btn(rel='delete' flat round icon='delete' aria-label='Delete' @click='ev => deleteChannel(ev, channel)')
+      QDraggableTree.q-draggable-tree(v-model='sidebarTree' group='main' :data='channelsAsTree' rowkey='id')
+        template(#body='{item}')
+          q-item.channel-menu-item(:key='item.id' v-bind='item.channel' clickable :to='{ name: "channel", params: { id: item.id } }')
+            q-item-section(avatar)
+              q-icon(v-if='item.channel.id === "chnSystem"' name='hive')
+              q-icon(v-else :name='item.channel.realmId === "rlm-public" ? "public" : "chat"')
+            q-item-section
+              q-item-label(lines=1) {{ item.channel.name }}
+              q-item-label(v-if='item.channel.caption' caption) {{ item.channel.caption }}
+            q-item-section
+              q-btn(rel='edit' flat dense icon='edit' aria-label='Edit' @click='ev => editChannel(ev, item.channel)')
+              q-btn(v-if='item.channel.id !== "chnSystem"' rel='delete' flat dense icon='delete' aria-label='Delete' @click='ev => deleteChannel(ev, item.channel)')
+            q-menu(touch-position context-menu @show='ev => ev.preventDefault() && ev.stopPropagation()')
+              q-btn(rel='edit' flat icon='edit' aria-label='Edit' @click='ev => editChannel(ev, item.channel)')
+              q-btn(rel='delete' flat round icon='delete' aria-label='Delete' @click='ev => deleteChannel(ev, item.channel)')
 
     //- Add channel button at bottom of list
     q-space
@@ -72,6 +74,32 @@ const channels = useObservable(liveQuery(async () => {
     channels.splice(channels.indexOf(systemChannel), 1)
     channels.unshift(systemChannel)
   }
+
+  return channels
+}))
+
+/**
+ * Sidebar tree
+ */
+const sidebarTree = ref([])
+const channelsAsTree = useObservable(liveQuery(async () => {
+  const channels = await store.getChannels()
+  const tree = channels.map(c => ({
+    id: c.id,
+    label: c.name,
+    channel: c,
+    children: [],
+  }))
+
+  // Move id: chnSystem to the beginning
+  const systemChannel = tree.find(c => c.id === 'chnSystem')
+  if (systemChannel) {
+    tree.splice(tree.indexOf(systemChannel), 1)
+    tree.unshift(systemChannel)
+  }
+
+  return tree
+
 
   return channels
 }))

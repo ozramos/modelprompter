@@ -10,12 +10,13 @@
     "dev": "npx cross-env NODE_ENV=development quasar dev",
     "build": "npx cross-env NODE_ENV=production quasar build",
     "test": "npx cross-env NODE_ENV=production npm run build && npx http-server ./dist/spa -p 8000",
-    "deploy": "npx cross-env NODE_ENV=production push-dir --dir=dist/spa --branch=gh-pages --allow-unclean --clean",
+    "deploy": " copyfiles CNAME ./dist/spa && npx cross-env NODE_ENV=production push-dir --dir=dist/spa --branch=gh-pages --allow-unclean --clean --force",
     "cloud:export": "npx dexie-cloud export dexie-export.json"
   },
   "dependencies": {
     "@quasar/extras": "^1.0.0",
     "@vueuse/rxjs": "^10.1.2",
+    "copyfiles": "^2.4.1",
     "dexie": "^4.0.1-alpha.10",
     "dexie-cloud-addon": "^4.0.1-beta.40",
     "dompurify": "^3.0.3",
