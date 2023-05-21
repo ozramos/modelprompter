@@ -23,7 +23,7 @@ q-layout(view='lHh Lpr lFf')
       q-item.channel-menu-item(v-for='channel in channels' :key='channel.id' v-bind='channel' clickable :to='{ name: "channel", params: { id: channel.id } }')
         q-item-section(avatar)
           q-icon(v-if='channel.id === "chnSystem"' name='hive')
-          q-icon(v-else name='chat')
+          q-icon(v-else :name='channel.realmId === "rlm-public" ? "public" : "chat"')
         q-item-section
           q-item-label(lines=1) {{ channel.name }}
           q-item-label(v-if='channel.caption' caption) {{ channel.caption }}

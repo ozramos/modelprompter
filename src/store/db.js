@@ -276,8 +276,14 @@ class Store {
    */
   async publishChannel (channelID) {
     // Move to public channel
-    this.db.channels.update(channelID, { realmId: 'rlm-public', owner: null })
-    let channel = await this.db.channels.get(channelID)
+    this.db.channels.update(channelID, { realmId: 'rlm-public' })
+    return await this.db.channels.get(channelID)
+  }
+
+  async unpublishChannel (channelID) {
+    // Move to public channel
+    this.db.channels.update(channelID, { realmId: this.db.cloud.currentUserId })
+    return await this.db.channels.get(channelID)
   }
 }
 const store = new Store()
