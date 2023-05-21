@@ -6,6 +6,7 @@ node_modules
 .env
 dexie-cloud.key
 dexie-cloud.json
+.env.*
 
 # Data
 dexie-export.json
