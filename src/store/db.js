@@ -108,6 +108,18 @@ class Store {
       return 0
     })
 
+    // Add system channel if it doesn't exist
+    // Create default channel
+    const system = await this.db.channels.get('chnSystem')
+    if (!system) {
+      await this.createChannel({
+        id: 'chnSystem',
+        name: 'System',
+        prompt: SystemPrompt,
+        chatModeDisabled: false,
+      })
+    }
+
     return channels
   }
 
