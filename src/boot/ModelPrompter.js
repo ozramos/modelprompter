@@ -8,6 +8,17 @@ import htmlWorker from 'monaco-editor/esm/vs/language/html/html.worker?worker'
 import tsWorker from 'monaco-editor/esm/vs/language/typescript/ts.worker?worker'
 
 export default boot(async ({ app }) => {
+
+  globalThis.mp = await {
+    store,
+    env: {
+      LOGO_SMALL: process.env.LOGO_SMALL,
+      LOGO_TITLE: process.env.LOGO_TITLE,
+      LOGO_FAVICON: process.env.LOGO_FAVICON,
+      LOGO_RELEASE: process.env.LOGO_RELEASE,
+    }
+  }
+
   globalThis.MonacoEnvironment = {
     getWorker(_, label) {
       if (label === 'json') {
@@ -24,9 +35,5 @@ export default boot(async ({ app }) => {
       }
       return new editorWorker();
     },
-  }
-
-  globalThis.mp = await {
-    store
   }
 })

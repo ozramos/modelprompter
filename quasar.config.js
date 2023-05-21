@@ -7,9 +7,9 @@
 
 // Configuration for your app
 // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js
+require('dotenv').config({ path: process.env.NODE_ENV === 'production' ? '.env.production' : '.env.development'})
 const { configure } = require('quasar/wrappers')
 module.exports = configure(function (/* ctx */) {
-  require('dotenv').config()
 
   return {
 
@@ -55,6 +55,11 @@ module.exports = configure(function (/* ctx */) {
       env: {
         NODE_ENV: process.env.NODE_ENV,
         OPENAI_API_KEY: process.env.OPENAI_API_KEY,
+
+        LOGO_SMALL: process.env.LOGO_SMALL,
+        LOGO_TITLE: process.env.LOGO_TITLE,
+        LOGO_FAVICON: process.env.LOGO_FAVICON,
+        LOGO_RELEASE: process.env.LOGO_RELEASE,
 
         DEXIE_CLIENT_ID: process.env.DEXIE_CLIENT_ID,
         DEXIE_CLIENT_SECRET: process.env.DEXIE_CLIENT_SECRET,

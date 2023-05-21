@@ -5,9 +5,9 @@ q-layout(view='lHh Lpr lFf')
       q-btn(flat dense round icon='menu' aria-label='Menu' @click='toggleMainSidebar')
       q-toolbar-title
         router-link.text-decoration-none.text-white(to='/')
-          img.lt-md.q-mr-sm(src='/logo-title-small.png' height=32 style='vertical-align: middle')
-          img.gt-sm.q-mr-sm(src='/logo-title.png' height=32 style='vertical-align: middle')
-        a(href='https://github.com/modelprompter/modelprompter/releases' target='_blank')
+          img.lt-md.q-mr-sm(:src='$env.logo?.small || "/logo-title-small.png"' height=32 style='vertical-align: middle')
+          img.gt-sm.q-mr-sm(:src='$env.logo?.title || "/logo-title.png"' height=32 style='vertical-align: middle')
+        a(:href='$env.logo?.release || "https://github.com/ozramos/modelprompter/releases"' target='_blank')
           small.q-ml-sm(style='font-size: .65em; display: inline-block; transform: translate(0, -3px)') {{pkg.version}}
       q-space(style='flex-grow: 0 !important')
       LoginLogout
@@ -59,6 +59,7 @@ import {useRouter} from 'vue-router'
 
 const connectedToCloud = !!process.env.DEXIE_DB_URL
 const allowLogin = !!Number(process.env.ALLOW_LOGIN)
+const $env = ref(globalThis.mp.env)
 
 const $q = useQuasar()
 const $router = useRouter()

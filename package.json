@@ -6,8 +6,8 @@
   "author": "Oz Ramos <0xozram@gmail.com>",
   "private": true,
   "scripts": {
-    "start": "quasar dev",
-    "dev": "quasar dev",
+    "start": "npx cross-env NODE_ENV=development quasar dev",
+    "dev": "npx cross-env NODE_ENV=development quasar dev",
     "build": "npx cross-env NODE_ENV=production quasar build",
     "test": "npx cross-env NODE_ENV=production npm run build && npx http-server ./dist/spa -p 8000",
     "deploy": "npx cross-env NODE_ENV=production push-dir --dir=dist/spa --branch=gh-pages --allow-unclean --clean",
