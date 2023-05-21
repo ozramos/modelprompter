@@ -72,6 +72,7 @@ const monacoOptions = {
   lineHeight: 24,
   tabSize: 2,
   automaticLayout: true,
+  language: 'markdown',
   minimap: {enabled: false}
 }
 
