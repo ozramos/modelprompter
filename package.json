@@ -12,7 +12,7 @@
     "test": "npx cross-env NODE_ENV=production npm run build && npx http-server ./dist/spa -p 8000",
     "deploy": "npx cross-env NODE_ENV=production push-dir --dir=dist/spa --branch=gh-pages --allow-unclean --clean",
     "cloud:export": "npx dexie-cloud export dexie-export.json"
-  },
+ },
   "dependencies": {
     "@quasar/extras": "^1.0.0",
     "@vueuse/rxjs": "^10.1.2",
