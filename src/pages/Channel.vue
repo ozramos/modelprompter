@@ -126,15 +126,15 @@ onMounted(async () => {
 })
 
 async function redirectOnEmptyChannel () {
-  // Redirect to main channel if channel doesn't exist
-  if (channel.value === undefined) {
-    // Check if we have channels, and if we do select first one
+  // Redirect to first available channel if in /
+  if ($router.currentRoute.value.name === 'home' || channel.value === undefined) {
     const channels = await store.getChannels()
-    // @todo Create new channel
     if (channels.length) {
-      $router.push({name: 'channel', params: {id: channels[channels.length > 1 && channels[0].id === 'chnSystem' ? 1 : 0].id}})
-    } else {
-      $router.push({name: 'system'})
+      if (channels[0].id === 'chnSystem' && channels.length > 1) {
+        $router.push({name: 'channel', params: {id: channels[1].id}})
+      } else {
+        $router.push({name: 'channel', params: {id: channels[0].id}})
+      }
     }
   }
 }
