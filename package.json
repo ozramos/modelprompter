@@ -8,8 +8,8 @@
   "scripts": {
     "start": "quasar dev",
     "dev": "quasar dev",
-    "build": "cross-env NODE_ENV=production quasar build",
-    "test": "cross-env NODE_ENV=production npm run build && npx http-server ./dist/spa -p 8000",
+    "build": "npx cross-env NODE_ENV=production quasar build",
+    "test": "npx cross-env NODE_ENV=production npm run build && npx http-server ./dist/spa -p 8000",
     "cloud:export": "npx dexie-cloud export dexie-export.json"
   },
   "dependencies": {
