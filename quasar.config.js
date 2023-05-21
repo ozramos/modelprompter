@@ -7,9 +7,10 @@
 
 // Configuration for your app
 // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js
-require('dotenv').config()
-const { configure } = require('quasar/wrappers')
 module.exports = configure(function (/* ctx */) {
+  require('dotenv').config()
+  const { configure } = require('quasar/wrappers')
+
   return {
 
 
