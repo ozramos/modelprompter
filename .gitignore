@@ -7,7 +7,7 @@ node_modules
 dexie-cloud.key
 dexie-cloud.json
 .env.*
-CNAME
+public/CNAME
 
 # Data
 dexie-export.json
