@@ -23,7 +23,7 @@ q-layout(view='lHh Lpr lFf')
       q-item.channel-menu-item(v-for='channel in channels' :key='channel.id' v-bind='channel' clickable :to='{ name: "channel", params: { id: channel.id } }')
         q-item-section(avatar)
           q-icon(v-if='channel.id === "chnSystem"' name='hive')
-          q-icon(v-else name='chat')
+          q-icon(v-else :name='channel.realmId === "rlm-public" ? "public" : "chat"')
         q-item-section
           q-item-label(lines=1) {{ channel.name }}
           q-item-label(v-if='channel.caption' caption) {{ channel.caption }}
@@ -56,6 +56,9 @@ import Settings from '/src/components/Settings.vue'
 import LoginLogout from '/src/components/LoginLogout.vue'
 import {useQuasar} from 'quasar'
 import {useRouter} from 'vue-router'
+
+const connectedToCloud = !!process.env.DEXIE_DB_URL
+const allowLogin = !!Number(process.env.ALLOW_LOGIN)
 
 const $q = useQuasar()
 const $router = useRouter()

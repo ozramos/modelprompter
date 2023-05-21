@@ -1,5 +1,5 @@
 <template lang="pug">
-q-btn(v-if='!isLoggedIn && allowLogin && connectedToCloud' @click='showModal()' icon='login') Sign in
+q-btn(v-if='allowLogin && !isLoggedIn && allowLogin && connectedToCloud' @click='showModal()' icon='login') Sign in
   q-dialog(v-model='isDialogVisible')
     //- Get Email
     q-card(v-if='!hasSentEmail' style='height: auto !important; min-width: 350px; max-width: 600px !important; width: auto !important;')
@@ -58,7 +58,6 @@ const isWaitingForOTP = ref(false)
 const isLoggingInWithOTP = ref(false)
 
 const connectedToCloud = !!process.env.DEXIE_DB_URL
-const allowRegistration = !!Number(process.env.ALLOW_REGISTRATION)
 const allowLogin = !!Number(process.env.ALLOW_LOGIN)
 
 /**
@@ -202,12 +201,15 @@ async function loginWithOTP () {
   store.db.cloud.currentUser.publicKey = publicKey
 
   // Send OTP
+  const isDemo = email.value === 'public@demo.local'
+
   const resp = await fetch(`${store.db.cloud.options.databaseUrl}/token`, {
     body: JSON.stringify({
       email: email.value,
       otp: otpToken.value,
+      demo_user: isDemo ? 'public@demo.local' : undefined,
       otp_id: otpData.value.otp_id,
-      grant_type: 'otp',
+      grant_type: isDemo ? 'demo' : 'otp',
       public_key: publicKeyPEM,
       scopes: ['ACCESS_DB']
     }),

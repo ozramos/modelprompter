@@ -9,7 +9,6 @@
 // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js
 
 const { configure } = require('quasar/wrappers')
-
 module.exports = configure(function (/* ctx */) {
   return {
 
@@ -26,7 +25,8 @@ module.exports = configure(function (/* ctx */) {
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#css
     css: [
-      'app.sass'
+      'app.sass',
+      'monaco.sass'
     ],
 
     // https://github.com/quasarframework/quasar/tree/dev/extras
@@ -51,7 +51,7 @@ module.exports = configure(function (/* ctx */) {
       },
 
       vueRouterMode: 'hash', // available values: 'hash', 'history'
-      env: require('dotenv').config().parsed,
+      env: require('dotenv').config({path: `.env.${process.env.NODE_ENV}`}).parsed,
 
       // vueRouterBase,
       // vueDevtools,
@@ -67,14 +67,15 @@ module.exports = configure(function (/* ctx */) {
       // polyfillModulePreload: true,
       // distDir
 
-      // extendViteConf (viteConf) {},
       // viteVuePluginOptions: {},
+      extendViteConf (viteConf) {
+        return viteConf
+      },
 
 
       vitePlugins: [
         ['vite-plugin-wasm'],
         ['vite-plugin-top-level-await'],
-        // ['@vue-macros/reactivity-transform/vite']
       ]
     },
 

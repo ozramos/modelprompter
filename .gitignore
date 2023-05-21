@@ -7,6 +7,9 @@ node_modules
 dexie-cloud.key
 dexie-cloud.json
 
+# Data
+dexie-export.json
+
 # Quasar core related directories
 .quasar
 /dist

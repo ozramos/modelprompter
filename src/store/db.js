@@ -14,14 +14,13 @@ class Store {
   async setup () {
     this.db = await new Dexie('chat', {addons: [dexieCloud]})
 
-    // Versions need to be upgraded by 2 to account for online/offline
     if (process.env.DEXIE_DB_URL) {
       storeConfig.realms = '@realmId'
-      // Next: 5
-      await store.db.version(3).stores(storeConfig)
+      storeConfig.members = '@id,realmId,email'
+      storeConfig.roles = '[realmId+name]'
+      await store.db.version(21).stores(storeConfig)
     } else {
-      // Next: 4
-      await store.db.version(2).stores(storeConfig)
+      await store.db.version(22).stores(storeConfig)
     }
 
     // Only even connect if we have a url
@@ -29,6 +28,7 @@ class Store {
       await this.db.cloud.configure({
         databaseUrl: process.env.DEXIE_DB_URL,
         customLoginGui: true,
+        requireAuth: false,
       })
     }
 
@@ -81,8 +81,8 @@ class Store {
    * Get Channels
    */
   async getChannels () {
-    return await this.db.channels.toArray()
-      .catch(this.error)
+    const channels = await this.db.channels.toArray()
+    return channels
   }
 
   /**
@@ -267,6 +267,24 @@ class Store {
   async isLoggedIn () {
     return this.db.cloud.currentUserId != 'unauthorized'
   }
+
+  /**
+   * Publish channel
+   * - Clone channel to realmId: rlm-public
+   * - Add "publishedTo" property to that cloned channel ID
+   * - Adds "published-to" to channel ID
+   */
+  async publishChannel (channelID) {
+    // Move to public channel
+    this.db.channels.update(channelID, { realmId: 'rlm-public' })
+    return await this.db.channels.get(channelID)
+  }
+
+  async unpublishChannel (channelID) {
+    // Move to public channel
+    this.db.channels.update(channelID, { realmId: this.db.cloud.currentUserId })
+    return await this.db.channels.get(channelID)
+  }
 }
 const store = new Store()
 
@@ -277,9 +295,9 @@ const store = new Store()
 // Configure store after export
 export default store
 const storeConfig = {
-  channels: '@id, name',
-  messages: '@id, channel, timestamp, from, to, message',
-  settings: '@id, key, value',
+  channels: '@id, realmId, name, publishedFrom, publishedTo, updated',
+  messages: '@id, realmId, channel, timestamp, from, to',
+  settings: '@id, realmId, key, value',
 }
 
 

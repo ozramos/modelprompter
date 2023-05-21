@@ -8,7 +8,8 @@ const md = new MarkdownIt({
   html: true,
   linkify: true,
   typographer: true,
-  breaks: true,
+  // breaks: true,
+  allowScripts: true,
 
   highlight: function (str, lang) {
     if (lang && hljs.getLanguage(lang)) {
