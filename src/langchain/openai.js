@@ -1,16 +1,19 @@
 import {ChatOpenAI} from 'langchain/chat_models/openai'
 import { HumanChatMessage, AIChatMessage, SystemChatMessage } from "langchain/schema"
 
-const model = new ChatOpenAI({
-  openAIApiKey: process.env.OPENAI_API_KEY
-})
+let model = {}
+if (process.env.OPENAI_API_KEY) {
+  model = new ChatOpenAI({
+    openAIApiKey: process.env.OPENAI_API_KEY
+  })
+}
 
 /**
  * Transform Quasar model to OpenAI model
  */
 model.transformMessages = function (messages) {
   const formattedMessages = []
-  
+
   messages.forEach(message => {
     switch (message.name) {
       case 'System':
