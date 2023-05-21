@@ -57,6 +57,9 @@ import LoginLogout from '/src/components/LoginLogout.vue'
 import {useQuasar} from 'quasar'
 import {useRouter} from 'vue-router'
 
+const connectedToCloud = !!process.env.DEXIE_DB_URL
+const allowLogin = !!Number(process.env.ALLOW_LOGIN)
+
 const $q = useQuasar()
 const $router = useRouter()
 const channels = useObservable(liveQuery(async () => {

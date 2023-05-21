@@ -2,9 +2,9 @@
 q-btn.full-width.q-pl-sm.q-pr-none(color='light' icon='settings' @click='showModal()')
   q-dialog(v-model='isDialogVisible')
     q-card(style='height: auto !important; max-width: 100% !important; width: 500px !important;')
-      q-card-section
+      q-card-section(v-if='connectedToCloud && allowLogin')
         .text-h4 Settings
-      q-card-section(v-if='connectedToCloud && allowRegistration')
+      q-card-section(v-if='connectedToCloud && allowLogin')
         p.text-h6 Cloud sync
         p(v-if='isLoggedIn')
           q-toggle.q-mr-xl(v-model='isCloudSyncEnabled' label='Enable cloud sync' color='primary')
@@ -41,8 +41,8 @@ const $router = useRouter()
 const isDialogVisible = ref(false)
 const isCloudSyncEnabled = ref(false)
 let jsonFile = ref(null)
-const connectedToCloud = !!process.env.DEXIE_DB_URL
-const allowRegistration = !!Number(process.env.ALLOW_REGISTRATION)
+
+const allowLogin = !!Number(process.env.ALLOW_LOGIN)
 
 /**
  * Listen for logged in user change

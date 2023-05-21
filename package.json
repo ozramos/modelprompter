@@ -8,8 +8,8 @@
   "scripts": {
     "start": "quasar dev",
     "dev": "quasar dev",
-    "build": "quasar build",
-    "test": "npm run build && npx http-server ./dist/spa -p 8000",
+    "build": "cross-env NODE_ENV=production quasar build",
+    "test": "cross-env NODE_ENV=production npm run build && npx http-server ./dist/spa -p 8000",
     "cloud:export": "npx dexie-cloud export dexie-export.json"
   },
   "dependencies": {
@@ -35,6 +35,7 @@
   "devDependencies": {
     "@quasar/app-vite": "^1.0.0",
     "autoprefixer": "^10.4.2",
+    "cross-env": "^7.0.3",
     "postcss": "^8.4.14",
     "vite-plugin-top-level-await": "^1.3.0",
     "vite-plugin-wasm": "^3.2.2"

@@ -1,5 +1,5 @@
 <template lang="pug">
-q-btn(v-if='!isLoggedIn && allowLogin && connectedToCloud' @click='showModal()' icon='login') Sign in
+q-btn(v-if='allowLogin && !isLoggedIn && allowLogin && connectedToCloud' @click='showModal()' icon='login') Sign in
   q-dialog(v-model='isDialogVisible')
     //- Get Email
     q-card(v-if='!hasSentEmail' style='height: auto !important; min-width: 350px; max-width: 600px !important; width: auto !important;')
@@ -58,7 +58,6 @@ const isWaitingForOTP = ref(false)
 const isLoggingInWithOTP = ref(false)
 
 const connectedToCloud = !!process.env.DEXIE_DB_URL
-const allowRegistration = !!Number(process.env.ALLOW_REGISTRATION)
 const allowLogin = !!Number(process.env.ALLOW_LOGIN)
 
 /**

@@ -51,7 +51,7 @@ module.exports = configure(function (/* ctx */) {
       },
 
       vueRouterMode: 'hash', // available values: 'hash', 'history'
-      env: require('dotenv').config().parsed,
+      env: require('dotenv').config({path: `.env.${process.env.NODE_ENV}`}).parsed,
 
       // vueRouterBase,
       // vueDevtools,
@@ -76,7 +76,6 @@ module.exports = configure(function (/* ctx */) {
       vitePlugins: [
         ['vite-plugin-wasm'],
         ['vite-plugin-top-level-await'],
-        ['@vue-macros/reactivity-transform/vite']
       ]
     },
 
