@@ -10,6 +10,7 @@
     "dev": "quasar dev",
     "build": "npx cross-env NODE_ENV=production quasar build",
     "test": "npx cross-env NODE_ENV=production npm run build && npx http-server ./dist/spa -p 8000",
+    "deploy": "npx cross-env NODE_ENV=production push-dir --dir=dist/spa --remote=gh-pages --branch=main",
     "cloud:export": "npx dexie-cloud export dexie-export.json"
   },
   "dependencies": {
@@ -27,6 +28,7 @@
     "monaco-editor": "^0.38.0",
     "monaco-editor-vue3": "^0.1.6",
     "pug": "^3.0.2",
+    "push-dir": "^0.4.1",
     "quasar": "^2.6.0",
     "remove": "^0.1.5",
     "vue": "^3.0.0",
