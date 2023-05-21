@@ -7,7 +7,7 @@
 
 // Configuration for your app
 // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js
-
+require('dotenv').config()
 const { configure } = require('quasar/wrappers')
 module.exports = configure(function (/* ctx */) {
   return {
@@ -51,7 +51,17 @@ module.exports = configure(function (/* ctx */) {
       },
 
       vueRouterMode: 'hash', // available values: 'hash', 'history'
-      env: require('dotenv').config({path: `.env.${process.env.NODE_ENV}`}).parsed,
+      env: {
+        NODE_ENV: process.env.NODE_ENV,
+        OPENAI_API_KEY: process.env.OPENAI_API_KEY,
+
+        DEXIE_CLIENT_ID: process.env.DEXIE_CLIENT_ID,
+        DEXIE_CLIENT_SECRET: process.env.DEXIE_CLIENT_SECRET,
+        DEXIE_CLIENT_URL: process.env.DEXIE_CLIENT_URL,
+
+        DEXIE_DB_URL: process.env.DEXIE_DB_URL,
+        ALLOW_LOGIN: process.env.ALLOW_LOGIN,
+      },
 
       // vueRouterBase,
       // vueDevtools,
