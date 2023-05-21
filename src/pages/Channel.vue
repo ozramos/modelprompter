@@ -27,9 +27,11 @@ q-page.boxed(:style-fn='() => ({ height: "calc(100vh - 50px)" })')
 
     .full-width.col.q-pa-md(v-if="isEditingMessage" style='overflow: auto')
       MonacoEditor(
+        theme="vs-dark"
         ref='$monacoEditor'
         :options="monacoOptions"
         v-model:value="newMessageText"
+        @editorDidMount="editorDidMount"
       )
 
     // Input field with submit button at bottom of view
@@ -41,9 +43,9 @@ q-page.boxed(:style-fn='() => ({ height: "calc(100vh - 50px)" })')
         q-fab-action(color='green' icon='publish' @click='publishChannel' label='Publish Channel' external-label)
 
       q-input.flex-auto(v-if='!isEditingMessage' ref='$input' v-model='input' type='textarea' @keyup.enter='submit' autogrow dense style="max-height: 350px; overflow: auto")
-      q-btn(v-if='isEditingMessage' color='red' @click='isEditingMessage = false') Cancel
+      q-btn(flat v-if='isEditingMessage' color='red' @click='isEditingMessage = false') Cancel
       q-space(v-if='isEditingMessage')
-      q-btn(v-if='isEditingMessage' @click='updateMessage') Update message
+      q-btn(v-if='isEditingMessage' @click='updateMessage') Update
       q-btn.q-ml-sm(v-if='!isEditingMessage' color='primary' label='Send' @click='submit')
 </template>
 
@@ -69,48 +71,48 @@ const monacoOptions = {
   lineHeight: 24,
   tabSize: 2,
 
-  theme: {
-    base: 'vs-dark',
-    inherit: true,
-    rules: [
-      { token: '', foreground: '9EFFFF', background: '9EFFFF' },
-      // { token: 'invalid', foreground: 'ff0000' },
-      { token: 'emphasis', fontStyle: 'italic' },
-      { token: 'strong', fontStyle: 'bold' },
+  // theme: {
+  //   base: 'vs-dark',
+  //   inherit: true,
+  //   rules: [
+  //     { token: '', foreground: '9EFFFF', background: '9EFFFF' },
+  //     // { token: 'invalid', foreground: 'ff0000' },
+  //     { token: 'emphasis', fontStyle: 'italic' },
+  //     { token: 'strong', fontStyle: 'bold' },
 
-      { token: 'variable', foreground: 'ff0000' },
-      // { token: 'variable.predefined', foreground: 'ff0000' },
-      { token: 'variable.parameter', foreground: '9EFFFF' },
-      // { token: 'constant', foreground: 'ff0000' },
-      { token: 'comment', foreground: 'B362FF' },
-      { token: 'number', foreground: 'FF628C' },
-      { token: 'number.hex', foreground: 'FF628C' },
-      { token: 'regexp', foreground: 'FB94FF' },
-      // { token: 'annotation', foreground: 'ff0000' },
-      { token: 'type', foreground: '9EFFFF' },
+  //     { token: 'variable', foreground: 'ff0000' },
+  //     // { token: 'variable.predefined', foreground: 'ff0000' },
+  //     { token: 'variable.parameter', foreground: '9EFFFF' },
+  //     // { token: 'constant', foreground: 'ff0000' },
+  //     { token: 'comment', foreground: 'B362FF' },
+  //     { token: 'number', foreground: 'FF628C' },
+  //     { token: 'number.hex', foreground: 'FF628C' },
+  //     { token: 'regexp', foreground: 'FB94FF' },
+  //     // { token: 'annotation', foreground: 'ff0000' },
+  //     { token: 'type', foreground: '9EFFFF' },
 
-      { token: 'delimiter', foreground: 'ffffff' },
+  //     { token: 'delimiter', foreground: 'ffffff' },
 
-      { token: 'attribute.name', foreground: 'ff0000' },
-      { token: 'attribute.value', foreground: 'ff0000' },
+  //     { token: 'attribute.name', foreground: 'ff0000' },
+  //     { token: 'attribute.value', foreground: 'ff0000' },
 
-      { token: 'string', foreground: 'A5FF90' },
+  //     { token: 'string', foreground: 'A5FF90' },
 
-      { token: 'keyword', foreground: 'FF9D00' }
-    ],
+  //     { token: 'keyword', foreground: 'FF9D00' }
+  //   ],
 
-    // @see https://code.visualstudio.com/api/references/theme-color
-    colors: {
-      'editorIndentGuide.background': '#A599E90F',
-      'editorIndentGuide.activeBackground': '#A599E942',
-      'editor.background': '#2d2b55',
-      'editor.foreground': '#ffffff',
-      'editor.selectionBackground': '#7448af',
-      'editor.lineHighlightBackground': '#1f1f41',
-      'editorCursor.foreground': '#fad000',
-      'editorWhitespace.foreground': 'red'
-    }
-  },
+  //   // @see https://code.visualstudio.com/api/references/theme-color
+  //   colors: {
+  //     'editorIndentGuide.background': '#A599E90F',
+  //     'editorIndentGuide.activeBackground': '#A599E942',
+  //     'editor.background': '#2d2b55',
+  //     'editor.foreground': '#ffffff',
+  //     'editor.selectionBackground': '#7448af',
+  //     'editor.lineHighlightBackground': '#1f1f41',
+  //     'editorCursor.foreground': '#fad000',
+  //     'editorWhitespace.foreground': 'red'
+  //   }
+  // },
   automaticLayout: true,
   minimap: {enabled: false}
 }
@@ -335,6 +337,13 @@ function publishChannel () {
 }
 
 /**
+ * Setup editor
+ */
+function editorDidMount (editor) {
+  globalThis.mp.editor = editor
+}
+
+/**
  * Edit message
  */
 const $monacoEditor = ref(null)
@@ -342,7 +351,6 @@ async function showEditMessage (ev, message) {
   newMessageText.value = message.text
   messageBeingEdited.value = message
   isEditingMessage.value = true
-  console.log($monacoEditor)
 
   // Focus input
   await nextTick()

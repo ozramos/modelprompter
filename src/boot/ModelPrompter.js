@@ -26,7 +26,7 @@ export default boot(async ({ app }) => {
     },
   }
 
-  globalThis.modelprompter = await {
+  globalThis.mp = await {
     store
   }
 })
