@@ -114,18 +114,30 @@ watch(() => $route.params.id, async (newId = 'chnSystem') => {
   messages.value = await store.getMessagesWithSystemPrompt(newId)
   channel.value = await store.db.channels.get(getChannelID())
   isChatModeDisabled.value = !!channel.value?.chatModeDisabled
+
+  redirectOnEmptyChannel()
 })
 onMounted(async () => {
   messages.value = await store.getMessagesWithSystemPrompt(getChannelID())
   channel.value = await store.db.channels.get(getChannelID())
   isChatModeDisabled.value = !!channel?.chatModeDisabled
 
-  // Redirect to main channel if channel doesn't exist
-  if (getChannelID() !== 'chnSystem' && !messages.value.length) {
-    $router.push({name: 'system'})
-  }
+  redirectOnEmptyChannel()
 })
 
+async function redirectOnEmptyChannel () {
+  // Redirect to main channel if channel doesn't exist
+  if (channel.value === undefined) {
+    // Check if we have channels, and if we do select first one
+    const channels = await store.getChannels()
+    // @todo Create new channel
+    if (channels.length) {
+      $router.push({name: 'channel', params: {id: channels[channels.length > 1 && channels[0].id === 'chnSystem' ? 1 : 0].id}})
+    } else {
+      $router.push({name: 'system'})
+    }
+  }
+}
 
 /**
  * Format date to YYYY-MM-DD HH:MM
