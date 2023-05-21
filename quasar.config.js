@@ -76,7 +76,7 @@ module.exports = configure(function (/* ctx */) {
       vitePlugins: [
         ['vite-plugin-wasm'],
         ['vite-plugin-top-level-await'],
-        // ['@vue-macros/reactivity-transform/vite']
+        ['@vue-macros/reactivity-transform/vite']
       ]
     },
 

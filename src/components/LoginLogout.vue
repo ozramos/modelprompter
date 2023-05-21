@@ -202,12 +202,15 @@ async function loginWithOTP () {
   store.db.cloud.currentUser.publicKey = publicKey
 
   // Send OTP
+  const isDemo = email.value === 'public@demo.local'
+
   const resp = await fetch(`${store.db.cloud.options.databaseUrl}/token`, {
     body: JSON.stringify({
       email: email.value,
       otp: otpToken.value,
+      demo_user: isDemo ? 'public@demo.local' : undefined,
       otp_id: otpData.value.otp_id,
-      grant_type: 'otp',
+      grant_type: isDemo ? 'demo' : 'otp',
       public_key: publicKeyPEM,
       scopes: ['ACCESS_DB']
     }),

@@ -28,6 +28,7 @@ class Store {
       await this.db.cloud.configure({
         databaseUrl: process.env.DEXIE_DB_URL,
         customLoginGui: true,
+        requireAuth: false,
       })
     }
 
@@ -274,54 +275,9 @@ class Store {
    * - Adds "published-to" to channel ID
    */
   async publishChannel (channelID) {
-    // Make channel public
+    // Move to public channel
+    this.db.channels.update(channelID, { realmId: 'rlm-public', owner: null })
     let channel = await this.db.channels.get(channelID)
-    // await this.db.channels.update(channel.id, {
-    //   realmId: 'rlm-public',
-    //   ownder: null
-    // })
-    // channel = await this.db.channels.get(channelID)
-    channel.realmId = 'rlm-public'
-    channel.owner = 'rlm-public'
-    channel.id += '__public'
-    await this.db.channels.put(channel)
-    channel = await this.db.channels.get(channelID + '__public')
-    console.log(channel)
-
-
-  //   // clone channel
-  //   let channel = await this.db.channels.get(channelID)
-  //   let clone = Object.assign({}, channel)
-  //   const realmId = 'rlm-public'
-
-  //   clone.id = `${channelID}-${realmId}`
-  //   clone.realmId = realmId
-  //   clone.publishedFrom = channel.id
-  //   channel.publishedTo = clone.id
-
-  //   const existingChannel = await this.db.messages.get(clone.id)
-
-  //   let cloneID
-  //   if (existingChannel) {
-  //     cloneID = await this.db.channels.update(clone.id, clone)
-  //   } else {
-  //     cloneID = await this.db.channels.add(clone)
-  //   }
-  //   clone = await this.db.channels.get(cloneID)
-  //   await this.db.channels.put(channel)
-
-  //   console.log(clone)
-
-  //   // clone messages
-  //   const messages = await this.db.messages.where({ channel: channelID }).toArray()
-  //   for (const message of messages) {
-  //     const cloneMessage = Object.assign({}, message)
-  //     cloneMessage.id = `${message.id}-${realmId}`
-  //     cloneMessage.realmId = realmId
-  //     cloneMessage.publishedFrom = message.id
-  //     cloneMessage.owner = null
-  //     cloneMessage.channel = clone.id
-  //   }
   }
 }
 const store = new Store()
