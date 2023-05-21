@@ -179,14 +179,18 @@ async function submit (ev) {
     if (!isChatModeDisabled.value) {
       // Transform messages to OpenAI format
       isThinking.value = true
-      const transformedMessages = llm.transformMessages(messages.value)
-      const response = await llm.call(transformedMessages)
+      if (process.env.OPENAI_API_KEY) {
+        const transformedMessages = llm.transformMessages(messages.value)
+        const response = await llm.call(transformedMessages)
+      } else {
+        $q.notify({message: 'OpenAI API key not set', color: 'negative'})
+      }
 
       // Add response to chat
       response.name = 'Agent'
       response.sent = false
       response.channel = message.channel
-      messages.value.push(await store.createMessage(response))
+      process.env.OPENAI_API_KEY && messages.value.push(await store.createMessage(response))
       isThinking.value = false
     }
   }
