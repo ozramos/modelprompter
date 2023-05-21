@@ -7,9 +7,9 @@
 
 // Configuration for your app
 // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js
+const { configure } = require('quasar/wrappers')
 module.exports = configure(function (/* ctx */) {
   require('dotenv').config()
-  const { configure } = require('quasar/wrappers')
 
   return {
 
@@ -70,7 +70,7 @@ module.exports = configure(function (/* ctx */) {
 
       // rebuildCache: true, // rebuilds Vite/linter/etc cache on startup
 
-      publicPath: process.env.NODE_ENV === 'production' ? '.' : '/',
+      publicPath: process.env.NODE_ENV === 'production' ? './modelprompter' : '/',
       // analyze: true,
       // rawDefine: {}
       // ignorePublicFolder: true,
