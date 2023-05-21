@@ -20,7 +20,7 @@ q-layout(view='lHh Lpr lFf')
 
     //- Links
     q-list(style='overflow-y: auto; overflow-x: hidden;')
-      QDraggableTree.q-draggable-tree(v-model='sidebarTree' group='main' :data='channelsAsTree' rowkey='id')
+      QDraggableTree.q-draggable-tree(v-model='sidebarTree' :data='sidebarTree' rowkey='id')
         template(#body='{item}')
           q-item.channel-menu-item(:key='item.id' v-bind='item.channel' clickable :to='{ name: "channel", params: { id: item.id } }')
             q-item-section(avatar)
@@ -75,34 +75,28 @@ const channels = useObservable(liveQuery(async () => {
     channels.unshift(systemChannel)
   }
 
+  // Update Sidebar tree
+  let tree = channels.map(c => ({
+    id: c.id,
+    label: c.name,
+    channel: c,
+    children: [],
+  }))
+  tree = [{
+    id: 0,
+    label: 'Channels',
+    channel: {},
+    children: tree
+  }]
+  sidebarTree.value = tree
+
   return channels
 }))
 
 /**
  * Sidebar tree
  */
-const sidebarTree = ref([])
-const channelsAsTree = useObservable(liveQuery(async () => {
-  const channels = await store.getChannels()
-  const tree = channels.map(c => ({
-    id: c.id,
-    label: c.name,
-    channel: c,
-    children: [],
-  }))
-
-  // Move id: chnSystem to the beginning
-  const systemChannel = tree.find(c => c.id === 'chnSystem')
-  if (systemChannel) {
-    tree.splice(tree.indexOf(systemChannel), 1)
-    tree.unshift(systemChannel)
-  }
-
-  return tree
-
-
-  return channels
-}))
+const sidebarTree = ref()
 
 /**
  * Toggle sidebar
