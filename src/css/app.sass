@@ -101,8 +101,23 @@ iframe
 .q-message-text-content
   white-space: pre-wrap
 
+  // This is kind of crazy lol
+  div > ul > li > *:first-child
+    margin-top: -1.2em
+  ul
+    margin-bottom: -.8em
+
+.q-message-text-content p
+  line-height: 1.25em
+  & + ul
+    margin-top: -3em
+
 .q-message-text-content p, .hljs
   margin: 0
+  padding-bottom: 1em
+
+  &:last-child
+    padding-bottom: 0.25em
 
 // Buttons
 .q-btn:not(.q-btn--flat)

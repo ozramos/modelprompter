@@ -71,6 +71,7 @@ const monacoOptions = {
   colorDecorators: true,
   lineHeight: 24,
   tabSize: 2,
+  wordWrap: 'on',
   automaticLayout: true,
   language: 'markdown',
   minimap: {enabled: false}

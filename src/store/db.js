@@ -315,6 +315,12 @@ class Store {
   async publishChannel (channelID) {
     // Move to public channel
     this.db.channels.update(channelID, { realmId: 'rlm-public' })
+    // Move messages to public channel
+    const messages = await this.db.messages.where('channel').equals(channelID).toArray()
+    for (const message of messages) {
+      this.db.messages.update(message.id, { realmId: 'rlm-public' })
+    }
+
     return await this.db.channels.get(channelID)
   }
 
