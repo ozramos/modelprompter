@@ -164,6 +164,11 @@ watch(() => $route.params.id, async (newId = 'chnSystem') => {
   channel.value = await store.db.channels.get(getChannelID())
   isChatModeDisabled.value = !!channel.value?.chatModeDisabled
 
+  if (channel.value?.readFromTop) {
+    maybeScrollToTop(true)
+  } else {
+    maybeScrollToBottom(true)
+  }
   redirectOnEmptyChannel()
 })
 onMounted(async () => {
