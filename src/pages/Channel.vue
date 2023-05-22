@@ -38,10 +38,12 @@ q-page.boxed(:style-fn='() => ({ height: "calc(100vh - 50px)" })')
     .q-pa-md.flex.full-width
       q-fab.q-mr-sm.notext(square direction='up' :color='!isChatModeDisabled ? "cyan" : "dark"' icon='settings' persistent)
         q-fab-action(color='negative' icon='delete' @click='clear' label='Clear messages' external-label)
-        q-fab-action(v-if='!isChatModeDisabled' color='blue' icon='group' @click='toggleChat(true)' external-label label='Chat mode enabled')
+        q-fab-action(v-if='!isChatModeDisabled' color='teal' text-color='light' icon='group' @click='toggleChat(true)' external-label label='Chat mode enabled')
         q-fab-action(v-else color='dark' icon='group_off' @click='toggleChat(false)' external-label label='Chat mode disabled')
         q-fab-action(v-if='channel?.realmId === "rlm-public"' color='negative' icon='public_off' @click='unpublishChannel' label='Unpublish Channel' external-label)
         q-fab-action(v-else color='green' icon='publish' @click='publishChannel' label='Publish Channel' external-label)
+        q-fab-action(v-if='!channel?.readFromTop' color='dark' icon='keyboard_double_arrow_up' @click="readFromTop" label='Reading from bottom' external-label)
+        q-fab-action(v-else color='dark' icon='keyboard_double_arrow_down' @click="readFromBottom" label='Reading from top' external-label)
 
       q-input.flex-auto(v-if='!isEditingMessage' ref='$input' v-model='input' type='textarea' @keyup.enter='submit' autogrow dense style="max-height: 350px; overflow: auto")
       q-btn(flat v-if='isEditingMessage' color='negative' @click='isEditingMessage = false') Cancel
@@ -86,7 +88,13 @@ const messages = useObservable(liveQuery(async () => {
 }))
 
 watch(messages, () => {
-  setTimeout(() => {maybeScrollToBottom(true)}, 0)
+  setTimeout(() => {
+    if (channel.value.readFromTop) {
+      maybeScrollToTop(true)
+    } else {
+      maybeScrollToBottom(true)
+    }
+  }, 0)
 })
 
 /**
@@ -94,6 +102,7 @@ watch(messages, () => {
  */
 let lastScrollTop = 0
 function maybeScrollToBottom (force = false) {
+  if (channel.readFromTop && !force) return
   setTimeout(() => {
     if ($messages.value.scrollTop > lastScrollTop - 200) {
       $messages.value.scrollTop = $messages.value.scrollHeight
@@ -102,13 +111,52 @@ function maybeScrollToBottom (force = false) {
   }, 0)
 }
 
+function maybeScrollToTop (force = false) {
+  if (!channel.readFromTop && !force) return
+  setTimeout(() => {
+    $messages.value.scrollTop = 0
+    lastScrollTop = 0
+  }, 0)
+}
+
+/**
+ * Read from top
+ */
+async function readFromTop () {
+  // channel.value = false
+  await store.db.channels.update(getChannelID(), {
+    readFromTop: true
+  })
+  maybeScrollToTop(true)
+  channel.value.readFromTop = true
+}
+
+/**
+ * Read from bottom
+ */
+async function readFromBottom () {
+  await store.db.channels.update(getChannelID(), {
+    readFromTop: false
+  })
+  maybeScrollToBottom(true)
+  channel.value.readFromTop = false
+}
+
 /**
  * Reload messages on router change
  */
 const $router = useRouter()
 const $route = useRoute()
 const channel = useObservable(liveQuery(async () => {
-  return store.channels.get(getChannelID())
+  const ch = await store.db.channels.get(getChannelID())
+  setTimeout(() => {
+    if (ch?.readFromTop) {
+      maybeScrollToTop(true)
+    } else {
+      maybeScrollToBottom(true)
+    }
+  }, 50)
+  return ch
 }))
 
 watch(() => $route.params.id, async (newId = 'chnSystem') => {
@@ -186,7 +234,11 @@ async function submit (ev) {
     input.value = ''
     $input.value.focus()
 
-    maybeScrollToBottom()
+    if (channel.value.readFromTop) {
+      maybeScrollToTop()
+    } else {
+      maybeScrollToBottom()
+    }
 
     // If chat mode is on, send message to AI
     if (!isChatModeDisabled.value) {
