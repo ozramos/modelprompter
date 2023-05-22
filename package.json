@@ -8,8 +8,8 @@
   "scripts": {
     "start": "npx cross-env NODE_ENV=development quasar dev",
     "dev": "npx cross-env NODE_ENV=development quasar dev",
-    "build": "npx cross-env NODE_ENV=production quasar build",
-    "test": "npx cross-env NODE_ENV=production npm run build && npx http-server ./dist/spa -p 8000",
+    "build": "npx cross-env NODE_ENV=production NODE_OPTIONS=--max-old-space-size=32768 quasar build",
+    "test": "npx cross-env NODE_ENV=production NODE_OPTIONS=--max-old-space-size=32768  http-server ./dist/spa -p 8000",
     "deploy": "npx cross-env NODE_ENV=production push-dir --dir=dist/spa --branch=gh-pages --allow-unclean --clean --force",
     "cloud:export": "npx dexie-cloud export dexie-export.json"
   },
