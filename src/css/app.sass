@@ -102,14 +102,16 @@ iframe
   white-space: pre-wrap
 
   // This is kind of crazy lol
-  div > ul > li > *:first-child
+  div > ul > li > *:first-child,
+  div > ol > li > *:first-child
     margin-top: -1.2em
-  ul
+  ul, ol
     margin-bottom: -.8em
 
 .q-message-text-content p
   line-height: 1.25em
-  & + ul
+  & + ul,
+  & + ol
     margin-top: -3em
 
 .q-message-text-content p, .hljs
