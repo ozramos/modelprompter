@@ -71,16 +71,40 @@ iframe
 
 // Messages
 .q-message-text-content
-  h1
-    font-size: 2em
-
   h1, h2, h3, h4, h5, h6
     margin: 0.5em 0
     margin: 0
-    margin-bottom: -1em
+    margin-bottom: 0em
     line-height: 1.5em
+
+  h1
+    font-weight: 600
+    font-size: 2em
+    margin-bottom: -.5em
+  h2
+    font-weight: 600
+    font-size: 1.5em
+    margin-bottom: -.5em
+  h3
+    font-weight: 600
+    font-size: 1.25em
+    margin-bottom: -.5em
+  h4
+    font-weight: 600
+    font-size: 1.1em
+    margin-bottom: -.5em
+  h5
+    font-weight: 600
+    font-size: 1em
+    margin-bottom: -.5em
+  h6
+    font-weight: 600
+    font-size: 0.9em
+    margin-bottom: -.5em
+
+
   ul
-    margin-top: 0
+    margin-top: -1em
     margin-bottom: 0em
   li
     margin-top: 0
@@ -99,8 +123,25 @@ iframe
 .q-message-text-content
   white-space: pre-wrap
 
+  // This is kind of crazy lol
+  div > ul > li > *:first-child,
+  div > ol > li > *:first-child
+    margin-top: -1.2em
+  ul, ol
+    margin-bottom: -.8em
+
+.q-message-text-content p
+  line-height: 1.25em
+  & + ul,
+  & + ol
+    margin-top: -3em
+
 .q-message-text-content p, .hljs
   margin: 0
+  padding-bottom: 1em
+
+  &:last-child
+    padding-bottom: 0.25em
 
 // Buttons
 .q-btn:not(.q-btn--flat)
@@ -250,3 +291,16 @@ body .q-dialog__backdrop
   overflow: hidden
   display: flex !important
   flex-direction: column !important
+
+// Tree
+.q-draggable-tree
+  padding: 0
+  > div
+    margin: 0
+  .q-tree__children .q-treeview-node__root
+    padding-top: 0 !important
+    display: block !important
+  .q-treeview-node__root
+    display: none !important
+  .q-tree__children
+    padding-left: 8px !important

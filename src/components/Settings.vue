@@ -23,8 +23,6 @@ q-btn.full-width.q-pl-sm.q-pr-none(color='light' icon='settings' @click='showMod
         q-btn(flat @click='hideModal') Cancel
         q-space
         q-btn(color='negative' @click='deleteDatabase()') Delete all data
-        q-space
-        q-btn(@click='updateSettings') Update Settings
 </template>
 
 <script setup>

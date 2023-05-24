@@ -20,19 +20,21 @@ q-layout(view='lHh Lpr lFf')
 
     //- Links
     q-list(style='overflow-y: auto; overflow-x: hidden;')
-      q-item.channel-menu-item(v-for='channel in channels' :key='channel.id' v-bind='channel' clickable :to='{ name: "channel", params: { id: channel.id } }')
-        q-item-section(avatar)
-          q-icon(v-if='channel.id === "chnSystem"' name='hive')
-          q-icon(v-else :name='channel.realmId === "rlm-public" ? "public" : "chat"')
-        q-item-section
-          q-item-label(lines=1) {{ channel.name }}
-          q-item-label(v-if='channel.caption' caption) {{ channel.caption }}
-        q-item-section
-          q-btn(rel='edit' flat dense icon='edit' aria-label='Edit' @click='ev => editChannel(ev, channel)')
-          q-btn(v-if='channel.id !== "chnSystem"' rel='delete' flat dense icon='delete' aria-label='Delete' @click='ev => deleteChannel(ev, channel)')
-        q-menu(touch-position context-menu @show='ev => ev.preventDefault() && ev.stopPropagation()')
-          q-btn(rel='edit' flat icon='edit' aria-label='Edit' @click='ev => editChannel(ev, channel)')
-          q-btn(rel='delete' flat round icon='delete' aria-label='Delete' @click='ev => deleteChannel(ev, channel)')
+      QDraggableTree.q-draggable-tree(v-model='sidebarTree' :data='sidebarTree' rowkey='id')
+        template(#body='{item}')
+          q-item.channel-menu-item(:key='item.id' v-bind='item.channel' clickable :to='{ name: "channel", params: { id: item.id } }')
+            q-item-section(avatar)
+              q-icon(v-if='item.channel.id === "chnSystem"' name='hive')
+              q-icon(v-else :name='item.channel.realmId === "rlm-public" ? "public" : "chat"')
+            q-item-section
+              q-item-label(lines=1) {{ item.channel.name }}
+              q-item-label(v-if='item.channel.caption' caption) {{ item.channel.caption }}
+            q-item-section
+              q-btn(rel='edit' flat dense icon='edit' aria-label='Edit' @click='ev => editChannel(ev, item.channel)')
+              q-btn(v-if='item.channel.id !== "chnSystem"' rel='delete' flat dense icon='delete' aria-label='Delete' @click='ev => deleteChannel(ev, item.channel)')
+            q-menu(touch-position context-menu @show='ev => ev.preventDefault() && ev.stopPropagation()')
+              q-btn(rel='edit' flat icon='edit' aria-label='Edit' @click='ev => editChannel(ev, item.channel)')
+              q-btn(rel='delete' flat round icon='delete' aria-label='Delete' @click='ev => deleteChannel(ev, item.channel)')
 
     //- Add channel button at bottom of list
     q-space
@@ -46,7 +48,7 @@ q-layout(view='lHh Lpr lFf')
 </template>
 
 <script setup>
-import {ref} from 'vue'
+import {ref, watch} from 'vue'
 import {useObservable} from '@vueuse/rxjs'
 import {liveQuery} from 'dexie'
 import pkg from '/package.json'
@@ -56,6 +58,7 @@ import Settings from '/src/components/Settings.vue'
 import LoginLogout from '/src/components/LoginLogout.vue'
 import {useQuasar} from 'quasar'
 import {useRouter} from 'vue-router'
+import {debounce} from 'quasar'
 
 const connectedToCloud = !!process.env.DEXIE_DB_URL
 const allowLogin = !!Number(process.env.ALLOW_LOGIN)
@@ -73,8 +76,48 @@ const channels = useObservable(liveQuery(async () => {
     channels.unshift(systemChannel)
   }
 
+  // Update Sidebar tree
+  let tree = channels.map(c => ({
+    id: c.id,
+    label: c.name,
+    channel: c,
+    children: [],
+  }))
+  tree = [{
+    id: 0,
+    label: 'Channels',
+    channel: {},
+    children: tree
+  }]
+  sidebarTree.value = tree
+
   return channels
 }))
+
+/**
+ * Update sort property on channels
+ */
+const sidebarTree = ref([])
+const updateSort = debounce((newTree) => {
+  const tree = newTree[0].children
+  let channels = tree.map(c => c.channel)
+
+  // Move system to front
+  const systemChannel = channels.find(c => c.id === 'chnSystem')
+  if (systemChannel) {
+    channels.splice(channels.indexOf(systemChannel), 1)
+    channels.unshift(systemChannel)
+  }
+
+  // Update sort property
+  channels = channels.map((c, i) => {
+    c.sort = i
+    return c
+  })
+
+  store.updateSorts(channels)
+}, 500, {leading: false, trailing: true})
+watch(sidebarTree, updateSort, {deep: true})
 
 /**
  * Toggle sidebar

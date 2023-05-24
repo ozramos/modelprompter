@@ -12,23 +12,25 @@ if (process.env.OPENAI_API_KEY) {
  * Transform Quasar model to OpenAI model
  */
 model.transformMessages = function (messages) {
-  const formattedMessages = []
-
+  const transformedMessages = []
   messages.forEach(message => {
+    const yaml =`\n---
+created: ${message.created || message.updated}`
+
     switch (message.name) {
       case 'System':
-        formattedMessages.push(new AIChatMessage(message.text))
+        transformedMessages.push(new AIChatMessage(message.text + yaml))
         break
       case 'Human':
-        formattedMessages.push(new HumanChatMessage(message.text))
+        transformedMessages.push(new HumanChatMessage(message.text + yaml))
         break
       case 'AI':
       default:
-        formattedMessages.push(new SystemChatMessage(message.text))
+        transformedMessages.push(new SystemChatMessage(message.text + yaml))
     }
   })
 
-  return formattedMessages
+  return transformedMessages
 }
 
 export default model

@@ -18,9 +18,9 @@ class Store {
       storeConfig.realms = '@realmId'
       storeConfig.members = '@id,realmId,email'
       storeConfig.roles = '[realmId+name]'
-      await store.db.version(21).stores(storeConfig)
+      await store.db.version(23).stores(storeConfig)
     } else {
-      await store.db.version(22).stores(storeConfig)
+      await store.db.version(24).stores(storeConfig)
     }
 
     // Only even connect if we have a url
@@ -40,6 +40,20 @@ class Store {
         name: 'System',
         prompt: SystemPrompt,
         chatModeDisabled: false,
+      })
+    }
+  }
+
+  /**
+   * Update channel sort order
+   */
+  async updateSorts (channels) {
+    // Loop through and update individual channels
+    for (const channel of channels) {
+      await this.db.channels.update(channel.id, {
+        id: channel.id,
+        name: channel.name,
+        sort: channel.sort,
       })
     }
   }
@@ -82,6 +96,30 @@ class Store {
    */
   async getChannels () {
     const channels = await this.db.channels.toArray()
+
+    // Sort by sort
+    channels.sort((a, b) => {
+      if (a.sort < b.sort) {
+        return -1
+      }
+      if (a.sort > b.sort) {
+        return 1
+      }
+      return 0
+    })
+
+    // Add system channel if it doesn't exist
+    // Create default channel
+    const system = await this.db.channels.get('chnSystem')
+    if (!system) {
+      await this.createChannel({
+        id: 'chnSystem',
+        name: 'System',
+        prompt: SystemPrompt,
+        chatModeDisabled: false,
+      })
+    }
+
     return channels
   }
 
@@ -277,6 +315,12 @@ class Store {
   async publishChannel (channelID) {
     // Move to public channel
     this.db.channels.update(channelID, { realmId: 'rlm-public' })
+    // Move messages to public channel
+    const messages = await this.db.messages.where('channel').equals(channelID).toArray()
+    for (const message of messages) {
+      this.db.messages.update(message.id, { realmId: 'rlm-public' })
+    }
+
     return await this.db.channels.get(channelID)
   }
 
@@ -295,8 +339,8 @@ const store = new Store()
 // Configure store after export
 export default store
 const storeConfig = {
-  channels: '@id, realmId, name, publishedFrom, publishedTo, updated',
-  messages: '@id, realmId, channel, timestamp, from, to',
+  channels: '@id, sort, realmId, name, publishedFrom, publishedTo, updated',
+  messages: '@id, sort, realmId, channel, timestamp, from, to',
   settings: '@id, realmId, key, value',
 }
 

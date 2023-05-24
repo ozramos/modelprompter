@@ -6,7 +6,7 @@ q-btn(v-if='allowLogin && !isLoggedIn && allowLogin && connectedToCloud' @click=
       q-card-section
         .text-h4 Sign in
       q-card-section
-        p(v-if='allowRegistration') <strong>Regsitration isn't required</strong>, but if you want to sync across devices or invite others, login below to get an access token emailed from <a href="https://dexie.org/cloud" target="_blank">Dexie Cloud</a> (our data store provider)
+        p(v-if='allowLogin') <strong>Regsitration isn't required</strong>, but if you want to sync across devices or invite others, login below to get an access token emailed from <a href="https://dexie.org/cloud" target="_blank">Dexie Cloud</a> (our data store provider)
         p(v-else) <strong class='text-red'>Registration is closed.</strong> If you're in beta, sign in below to get an access token emailed from <a href="https://dexie.org/cloud" target="_blank">Dexie Cloud</a> (our data store provider)
         div
           q-input(ref='$email' v-model='email' label='Email' type='email' :disabled='isWaitingForOTP')

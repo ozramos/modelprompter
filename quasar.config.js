@@ -67,6 +67,7 @@ module.exports = configure(function (/* ctx */) {
 
         DEXIE_DB_URL: process.env.DEXIE_DB_URL,
         ALLOW_LOGIN: process.env.ALLOW_LOGIN,
+        PUBLIC_PATH: process.env.PUBLIC_PATH,
       },
 
       // vueRouterBase,
@@ -75,7 +76,7 @@ module.exports = configure(function (/* ctx */) {
 
       // rebuildCache: true, // rebuilds Vite/linter/etc cache on startup
 
-      publicPath: process.env.NODE_ENV === 'production' ? './modelprompter' : '/',
+      publicPath: process.env.PUBLIC_PATH || '/',
       // analyze: true,
       // rawDefine: {}
       // ignorePublicFolder: true,
