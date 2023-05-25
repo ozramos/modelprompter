@@ -4,35 +4,38 @@
 q-page.boxed(:style-fn='() => ({ height: "calc(100vh - 50px)" })')
   div.column(style='height: 100%;')
     // Chat area
-    .full-width.col.q-pa-md(ref='$messages' style='overflow: auto')
-      div(v-for='message in messages')
-        q-chat-message(
-          :key='message.id'
-          :text-html='true'
-          :text='[formattedMessage[message.id]]'
-          :bg-color='getChatBg(message)'
-          :text-color='message.sent ? "white" : "black"'
-          :stamp='formatDate(message.created || message.updated)'
-          :sent='message.name === "System"'
+    q-splitter.col(v-model='splitter' :disable='!isEditingMessage' ref='$messages' horizontal style='overflow: auto')
+      template(v-slot:before)
+        .q-pa-md
+          div(v-for='message in messages')
+            q-chat-message(
+              :key='message.id'
+              :text-html='true'
+              :text='[formattedMessage[message.id]]'
+              :bg-color='getChatBg(message)'
+              :text-color='getChatTextColor(message)'
+              :stamp='formatDate(message.created || message.updated)'
+              :sent='message.name === "System"'
+              :data-id='message.id'
+            )
+            q-menu(touch-position context-menu auto-close @show='ev => ev.preventDefault() && ev.stopPropagation()')
+              q-btn(rel='edit' flat icon='edit' aria-label='Edit' @click='ev => showEditMessage(ev, message)')
+              q-btn(rel='delete' flat round icon='delete' aria-label='Delete' @click='ev => deleteMessage(ev, message)')
+
+          q-chat-message(
+            v-if='isThinking'
+            bg-color='negative'
+          )
+            q-spinner-dots(size='2rem')
+
+      template(v-if='isEditingMessage' v-slot:after)
+        MonacoEditor(
+          theme="vs-dark"
+          ref='$monacoEditor'
+          :options="monacoOptions"
+          v-model:value="newMessageText"
+          @editorDidMount="editorDidMount"
         )
-        q-menu(touch-position context-menu auto-close @show='ev => ev.preventDefault() && ev.stopPropagation()')
-          q-btn(rel='edit' flat icon='edit' aria-label='Edit' @click='ev => showEditMessage(ev, message)')
-          q-btn(rel='delete' flat round icon='delete' aria-label='Delete' @click='ev => deleteMessage(ev, message)')
-
-      q-chat-message(
-        v-if='isThinking'
-        bg-color='negative'
-      )
-        q-spinner-dots(size='2rem')
-
-    .full-width.col.q-pa-md(v-if="isEditingMessage" style='overflow: auto')
-      MonacoEditor(
-        theme="vs-dark"
-        ref='$monacoEditor'
-        :options="monacoOptions"
-        v-model:value="newMessageText"
-        @editorDidMount="editorDidMount"
-      )
 
     // Input field with submit button at bottom of view
     .q-pa-md.flex.full-width
@@ -65,6 +68,8 @@ import {useQuasar} from 'quasar'
 import md from '/src/boot/markdown.js'
 import DOMPurify from 'dompurify'
 import MonacoEditor from 'monaco-editor-vue3'
+import { scroll } from 'quasar'
+const { getScrollTarget, setVerticalScrollPosition } = scroll
 
 const $q = useQuasar()
 const $messages = ref(null)
@@ -78,6 +83,26 @@ const monacoOptions = {
   language: 'markdown',
   minimap: {enabled: false}
 }
+const splitter = ref(100)
+const newMessageText = ref('')
+const isEditingMessage = ref(0)
+
+/**
+ * Full height splitter if not editing
+ */
+watch(splitter, (val) => {
+  if (!isEditingMessage.value) {
+    splitter.value = 100
+  }
+})
+watch(isEditingMessage, (val) => {
+  if (!val) {
+    splitter.value = 100
+  } else {
+    splitter.value = 50
+  }
+})
+
 
 /**
  * Handle messages
@@ -284,18 +309,41 @@ async function clear () {
  */
 function getChatBg (msg) {
   let bg = 'black'
-  switch (msg.name) {
-    case 'System':
-      bg = 'success'
-      break
-    case 'Agent':
-      bg = 'primary'
-      break
-    case 'User':
-      bg = 'blue'
-      break
+
+  if (!isEditingMessage?.value || isEditingMessage?.value !== msg.id) {
+    switch (msg.name) {
+      case 'System':
+        bg = 'success'
+        break
+      case 'Agent':
+        bg = 'primary'
+        break
+      case 'User':
+        bg = 'blue'
+        break
+    }
+  } else {
+    switch (msg.name) {
+      case 'System':
+        bg = 'success'
+        break
+      case 'Agent':
+        bg = 'yellow-2'
+        break
+      case 'User':
+        bg = 'teal'
+        break
+    }
   }
+
   return bg
+}
+function getChatTextColor (message) {
+  if (!isEditingMessage?.value || isEditingMessage?.value !== message.id) {
+    return message.sent ? "white" : "black"
+  } else {
+    return 'black'
+  }
 }
 
 /**
@@ -391,28 +439,34 @@ const $monacoEditor = ref(null)
 async function showEditMessage (ev, message) {
   newMessageText.value = message.text
   messageBeingEdited.value = message
-  isEditingMessage.value = true
+  isEditingMessage.value = message.id
 
   // Focus input
   await nextTick()
   setTimeout(() => {
     $monacoEditor.value.editor.focus()
   }, 10)
+
+  // Scroll into view
+  const $el = document.querySelector(`[data-id="${message.id}"]`)
+  if ($el) {
+    const target = $el.closest('.q-splitter').querySelector('.q-splitter__before')
+    const offset = $el.offsetTop - $el.scrollHeight
+    const duration = 250
+    setVerticalScrollPosition(target, offset, duration)
+  }
 }
 
 /**
  * Update message
  */
-const newMessageText = ref('')
-const isEditingMessage = ref(false)
-
 async function updateMessage () {
   await store.db.messages.update(messageBeingEdited.value.id, {
     text: newMessageText.value
   })
   messages.value = await store.getMessagesWithSystemPrompt(getChannelID())
   messageBeingEdited.value = null
-  isEditingMessage.value = false
+  isEditingMessage.value = 0
 }
 
 /**
