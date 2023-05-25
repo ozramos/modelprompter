@@ -21,6 +21,7 @@ q-page.boxed(:style-fn='() => ({ height: "calc(100vh - 50px)" })')
             q-menu(touch-position context-menu auto-close @show='ev => ev.preventDefault() && ev.stopPropagation()')
               q-btn(rel='edit' flat icon='edit' aria-label='Edit' @click='ev => showEditMessage(ev, message)')
               q-btn(rel='delete' flat round icon='delete' aria-label='Delete' @click='ev => deleteMessage(ev, message)')
+              q-btn(rel='redo' flat icon='replay' aria-label='Redo' @click='ev => redoLLM(ev, message)')
 
           q-chat-message(
             v-if='isThinking'
@@ -294,6 +295,60 @@ async function submit (ev) {
 }
 
 /**
+ * Redo the message
+ */
+async function redoLLM (ev, message) {
+  // Transform messages to OpenAI format
+  isThinking.value = true
+
+  // Delete this current message
+  // @fixme change to updated when sorting is implemented
+  const msgDate = message.created
+  const backup = Object.assign({}, message)
+
+  // Only send the messages that were sent before this one (including this one)
+  const messagesToRedo = messages.value.filter(msg => {
+    const msgDate = msg.created
+    return msgDate <= msgDate
+  })
+
+  // Remove from messagesToRedo the elemnt with same id
+  if (message.name === "Agent") {
+    messagesToRedo.splice(messagesToRedo.findIndex(msg => msg.id === message.id), 1)
+    await store.db.messages.delete(message.id)
+  }
+
+  // Remember index
+  const index = messages.value.indexOf(message)
+
+  try {
+    if (process.env.OPENAI_API_KEY) {
+      const transformedMessages = llm.transformMessages(messagesToRedo)
+      const response = await llm.call(transformedMessages)
+
+      // Add response to chat
+      response.name = 'Agent'
+      response.sent = false
+      response.channel = message.channel
+
+      // Insert back at index
+      messages.value.splice(index, 0, await store.createMessage(response))
+    } else {
+      $q.notify({message: 'OpenAI API key not set', color: 'negative'})
+    }
+  } catch (e) {
+    // Restore message
+    if (message.name === "Agent") {
+      await store.db.messages.put(backup)
+    }
+    $q.notify({message: `Error redoing message: ${e}`, color: 'negative'})
+    console.log(e)
+  }
+
+  isThinking.value = false
+}
+
+/**
  * Clears the chat
  */
 async function clear () {
@@ -377,7 +432,7 @@ async function toggleChat (disabled = false) {
  */
 const formattedMessage = computed((message) => {
   return messages.value.reduce((msg, item) => {
-    // msg[item.id] = DOMPurify.sanitize(md.render(item.text), { ADD_TAGS: ['iframe'], ADD_ATTR: ['allow', 'allowfullscreen', 'frameborder', 'scrolling'] })
+    msg[item.id] = DOMPurify.sanitize(md.render(item.text), { ADD_TAGS: ['iframe'], ADD_ATTR: ['allow', 'allowfullscreen', 'frameborder', 'scrolling'] })
     msg[item.id] = md.render(item.text)
 
     // Extract naked script tag and run it

@@ -48,7 +48,6 @@ export default boot(async ({ app }) => {
    */
   document.addEventListener('click', (ev) => {
     // Check if the clicked element has the class "classname"
-    console.log(ev)
     if (ev.target.classList.contains('video-container-mask')) {
       const $video = ev.target.parentNode.querySelector('video')
       $video.play()
