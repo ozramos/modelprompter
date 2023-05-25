@@ -1,39 +1,40 @@
 # ModelPrompter
 
-A chat and gesture driven, DIY "everything app"
+> An AI-driven digital garden...imagine Notion + Codepen + Stable Diffusion + Auto GPT all in one app
 
 ---
 
 ## Features
 <table>
   <tr>
-    <td>Now</td>
-    <td>Soon</td>
-  </tr>
-  <tr>
+    <td><img width="549" alt="Screenshot 2023-05-22 080401" src="https://github.com/ozramos/modelprompter/assets/69949201/b2389e50-1fb1-4217-be90-0b864735ab94">
+</td>
     <td>
-      <ul>
-        <li>Serverless, static site with longterm local storage (IndexedDB via Dexie.js)</li>
-        <li>ChatGPT like prompting with Quasar Framework Vue.js frontend (requires OpenAPI Key, other options soon)</li>
-        <li>A lot of bugs 🐞</li>
-      </ul>
-    </td>
-    <td>
-      <ul>
-      <li>Show messages as markdown
-      <li>API and auto gpt designer
-      <li>Browser extension
-      <li>Optional cloud and local storage and sync
-      <li>Export to native apps (desktop, mobile, browser extensions)
-      <li>Encryption
-      <li>a lot more 🚀
-      </ul>
-    </td>
+
+https://github.com/ozramos/modelprompter/assets/69949201/57ee300e-d2cc-4d1b-a5e2-ea60470191cf
+
+</td>
   </tr>
 </table>
 
+## Features
+### Offline with opt-in cloud sync
+- offline
+  - in-browser data storage with IndexedDB
+  - import/export .json
+- cloud
+  - create and/or sync to your own (https://dexie.org/cloud)
 
-<img width="925" alt="image" src="https://user-images.githubusercontent.com/69949201/236665885-310b02d8-0556-409c-8be0-425b888189a4.png">
+### Editing
+- Right click (or long tap) to edit messages
+  - Markdown with executable HTML and JavaScript
+  - Use a customizable monaco editor (same as VSCode)
+- Unsandboxed HTML and JavaScript with access to page var
+
+### Branding
+- Easy to rebrand (instructions soon)
+
+## [more info coming soon]
 
 <br>
 <br>
