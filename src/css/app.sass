@@ -14,7 +14,35 @@ pre
   overflow-x: auto
 b, strong
   font-weight: 900
-//   color: $teal
+video
+  width: 100%
+
+.video-container
+  position: relative
+  cursor: pointer
+
+  .video-container-mask
+    position: absolute
+    background: rgba(0, 0, 0, 0.5)
+    top: 0
+    left: 0
+    width: 100%
+    height: 100%
+
+  .q-icon
+    position: absolute
+    top: 50%
+    left: 50%
+    transform: translate(-50%, -50%)
+    font-size: 5em
+    color: $primary
+    pointer-events: none
+
+  &:hover .q-icon
+    color: $yellow-3
+
+video.started ~ *
+  display: none !important
 
 h1, h2, h3, h4, h5, h6
   &:first-child

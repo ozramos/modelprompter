@@ -42,4 +42,16 @@ export default boot(async ({ app }) => {
       return new editorWorker();
     },
   }
+
+  /**
+   * Listen to video-container-mask clicks to start the player
+   */
+  document.addEventListener('click', (ev) => {
+    // Check if the clicked element has the class "classname"
+    if (ev.target.classList.contains('video-container-mask')) {
+      const $video = ev.target.parentNode.querySelector('video')
+      $video.play()
+      $video.classList.add('started')
+    }
+  })
 })
