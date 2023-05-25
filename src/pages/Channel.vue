@@ -111,7 +111,12 @@ watch(isEditingMessage, (val) => {
  */
 let isThinking = ref(false)
 const messages = useObservable(liveQuery(async () => {
-  return await store.getMessagesWithSystemPrompt(getChannelID())
+  const messages = await store.getMessagesWithSystemPrompt(getChannelID())
+  // Stort by date
+  messages.sort((a, b) => {
+    return a.created - b.created
+  })
+  return messages
 }))
 
 watch(messages, () => {
@@ -122,6 +127,11 @@ watch(messages, () => {
       maybeScrollToBottom(true)
     }
   }, 0)
+
+  // Stort by date
+  messages.value = messages.value.sort((a, b) => {
+    return a.created - b.created
+  })
 })
 
 /**
@@ -301,13 +311,12 @@ async function submit (ev) {
 async function redoLLM (ev, message) {
   // Transform messages to OpenAI format
   isThinking.value = true
+  let index = messages.value.findIndex(msg => msg.id === message.id)
 
   // Only send the messages that were sent before this one (including this one)
   // @fixme change to updated when sorting is implemented
-  const msgDate = message.created
   const messagesToRedo = messages.value.filter(msg => {
-    const msgDate = msg.created
-    return msgDate <= msgDate
+    return msg.created <= message.created
   })
 
   // Remove from messagesToRedo the elemnt with same id
@@ -319,9 +328,6 @@ async function redoLLM (ev, message) {
     await store.db.messages.delete(message.id)
   }
 
-  // Remember index
-  const index = messages.value.indexOf(message)
-
   try {
     if (process.env.OPENAI_API_KEY) {
       const transformedMessages = llm.transformMessages(messagesToRedo)
@@ -331,13 +337,19 @@ async function redoLLM (ev, message) {
       response.name = 'Agent'
       response.sent = false
       response.channel = message.channel
-      response.created = message.date
+      response.updated = message.updated
 
-      // If this was the last element, stack it at end otherwise splice it back in
-      if (index === messages.value.length - 1) {
-        messages.value.splice(index, 0, await store.createMessage(response))
+      // Add the image near where it was restarted from
+      if (message.name === 'User') {
+        const msg = await store.createMessage(response)
+        msg.created = message.created
+        messages.value.splice(index+1, 0, msg)
+        await store.db.messages.update(msg.id, {created: message.created})
       } else {
-        messages.value.push(await store.createMessage(response))
+        const msg = await store.createMessage(response)
+        msg.created = message.created
+        messages.value.splice(index, 0, msg)
+        await store.db.messages.update(msg.id, {created: message.created})
       }
 
       setTimeout(() => {
