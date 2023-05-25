@@ -13,9 +13,10 @@ q-page.boxed(:style-fn='() => ({ height: "calc(100vh - 50px)" })')
               :text-html='true'
               :text='[formattedMessage[message.id]]'
               :bg-color='getChatBg(message)'
-              :text-color='message.sent ? "white" : "black"'
+              :text-color='getChatTextColor(message)'
               :stamp='formatDate(message.created || message.updated)'
               :sent='message.name === "System"'
+              :data-id='message.id'
             )
             q-menu(touch-position context-menu auto-close @show='ev => ev.preventDefault() && ev.stopPropagation()')
               q-btn(rel='edit' flat icon='edit' aria-label='Edit' @click='ev => showEditMessage(ev, message)')
@@ -67,6 +68,8 @@ import {useQuasar} from 'quasar'
 import md from '/src/boot/markdown.js'
 import DOMPurify from 'dompurify'
 import MonacoEditor from 'monaco-editor-vue3'
+import { scroll } from 'quasar'
+const { getScrollTarget, setVerticalScrollPosition } = scroll
 
 const $q = useQuasar()
 const $messages = ref(null)
@@ -82,7 +85,7 @@ const monacoOptions = {
 }
 const splitter = ref(100)
 const newMessageText = ref('')
-const isEditingMessage = ref(false)
+const isEditingMessage = ref(0)
 
 /**
  * Full height splitter if not editing
@@ -306,18 +309,41 @@ async function clear () {
  */
 function getChatBg (msg) {
   let bg = 'black'
-  switch (msg.name) {
-    case 'System':
-      bg = 'success'
-      break
-    case 'Agent':
-      bg = 'primary'
-      break
-    case 'User':
-      bg = 'blue'
-      break
+
+  if (!isEditingMessage?.value || isEditingMessage?.value !== msg.id) {
+    switch (msg.name) {
+      case 'System':
+        bg = 'success'
+        break
+      case 'Agent':
+        bg = 'primary'
+        break
+      case 'User':
+        bg = 'blue'
+        break
+    }
+  } else {
+    switch (msg.name) {
+      case 'System':
+        bg = 'success'
+        break
+      case 'Agent':
+        bg = 'yellow-2'
+        break
+      case 'User':
+        bg = 'teal'
+        break
+    }
   }
+
   return bg
+}
+function getChatTextColor (message) {
+  if (!isEditingMessage?.value || isEditingMessage?.value !== message.id) {
+    return message.sent ? "white" : "black"
+  } else {
+    return 'black'
+  }
 }
 
 /**
@@ -413,13 +439,22 @@ const $monacoEditor = ref(null)
 async function showEditMessage (ev, message) {
   newMessageText.value = message.text
   messageBeingEdited.value = message
-  isEditingMessage.value = true
+  isEditingMessage.value = message.id
 
   // Focus input
   await nextTick()
   setTimeout(() => {
     $monacoEditor.value.editor.focus()
   }, 10)
+
+  // Scroll into view
+  const $el = document.querySelector(`[data-id="${message.id}"]`)
+  if ($el) {
+    const target = $el.closest('.q-splitter').querySelector('.q-splitter__before')
+    const offset = $el.offsetTop - $el.scrollHeight
+    const duration = 250
+    setVerticalScrollPosition(target, offset, duration)
+  }
 }
 
 /**
@@ -431,7 +466,7 @@ async function updateMessage () {
   })
   messages.value = await store.getMessagesWithSystemPrompt(getChannelID())
   messageBeingEdited.value = null
-  isEditingMessage.value = false
+  isEditingMessage.value = 0
 }
 
 /**
