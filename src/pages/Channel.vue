@@ -59,7 +59,7 @@ q-page.boxed(:style-fn='() => ({ height: "calc(100vh - 50px)" })')
 
 
 <script setup>
-import {ref, onMounted, watch, computed, nextTick} from 'vue'
+import {ref, onMounted, watch, computed, nextTick } from 'vue'
 import {useObservable} from '@vueuse/rxjs'
 import {liveQuery} from 'dexie'
 import store from '/src/store/db.js'
@@ -87,6 +87,7 @@ const monacoOptions = {
 const splitter = ref(100)
 const newMessageText = ref('')
 const isEditingMessage = ref(0)
+const forcedUpdates = ref(0)
 
 /**
  * Full height splitter if not editing
@@ -301,20 +302,20 @@ async function redoLLM (ev, message) {
   // Transform messages to OpenAI format
   isThinking.value = true
 
-  // Delete this current message
+  // Only send the messages that were sent before this one (including this one)
   // @fixme change to updated when sorting is implemented
   const msgDate = message.created
-  const backup = Object.assign({}, message)
-
-  // Only send the messages that were sent before this one (including this one)
   const messagesToRedo = messages.value.filter(msg => {
     const msgDate = msg.created
     return msgDate <= msgDate
   })
 
   // Remove from messagesToRedo the elemnt with same id
+  const backup = Object.assign({}, message)
   if (message.name === "Agent") {
     messagesToRedo.splice(messagesToRedo.findIndex(msg => msg.id === message.id), 1)
+    messages.value.splice(messages.value.findIndex(msg => msg.id === message.id), 1)
+    forcedUpdates.value++
     await store.db.messages.delete(message.id)
   }
 
@@ -330,9 +331,19 @@ async function redoLLM (ev, message) {
       response.name = 'Agent'
       response.sent = false
       response.channel = message.channel
+      response.created = message.date
 
-      // Insert back at index
-      messages.value.splice(index, 0, await store.createMessage(response))
+      // If this was the last element, stack it at end otherwise splice it back in
+      if (index === messages.value.length - 1) {
+        messages.value.splice(index, 0, await store.createMessage(response))
+      } else {
+        messages.value.push(await store.createMessage(response))
+      }
+
+      setTimeout(() => {
+        forcedUpdates.value++
+      }, 50)
+      forcedUpdates.value++
     } else {
       $q.notify({message: 'OpenAI API key not set', color: 'negative'})
     }
