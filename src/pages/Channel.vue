@@ -411,6 +411,12 @@ const formattedMessage = computed((message) => {
       })
     }
 
+    // Wrap <video> tags in a container
+    const video = msg[item.id].match(/<video([\s\S]*)<\/video>/)
+    if (video) {
+      msg[item.id] = msg[item.id].replace(/<video([\s\S]*)<\/video>/, '<div class="video-container"><video$1</video><div class="video-container-mask"></div><i class="q-icon notranslate material-icons">play_circle_filled</i></div>')
+    }
+
     return msg
   }, {})
 })
@@ -451,7 +457,7 @@ async function showEditMessage (ev, message) {
   const $el = document.querySelector(`[data-id="${message.id}"]`)
   if ($el) {
     const target = $el.closest('.q-splitter').querySelector('.q-splitter__before')
-    const offset = $el.offsetTop - $el.scrollHeight
+    const offset = $el.offsetTop - 4
     const duration = 250
     setVerticalScrollPosition(target, offset, duration)
   }
