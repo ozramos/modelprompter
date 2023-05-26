@@ -1,6 +1,7 @@
 <template lang="pug">
 // Create a full height q-page, with a footer for the chat input
 // The chat area above it should fill the rest of the page
+div.scripts-container(ref='$scriptsContainer')
 q-page.boxed(:style-fn='() => ({ height: "calc(100vh - 50px)" })')
   div.column(style='height: 100%;')
     // Chat area
@@ -65,7 +66,7 @@ import {liveQuery} from 'dexie'
 import store from '/src/store/db.js'
 import llm from '/src/langchain/openai.js'
 import { useRouter, useRoute } from 'vue-router'
-import {useQuasar} from 'quasar'
+import {useQuasar, debounce} from 'quasar'
 import md from '/src/boot/markdown.js'
 import DOMPurify from 'dompurify'
 import MonacoEditor from 'monaco-editor-vue3'
@@ -74,6 +75,7 @@ const { getScrollTarget, setVerticalScrollPosition } = scroll
 
 const $q = useQuasar()
 const $messages = ref(null)
+const $scriptsContainer = ref(null)
 const messageBeingEdited = ref(true)
 const monacoOptions = {
   colorDecorators: true,
@@ -454,50 +456,40 @@ async function toggleChat (disabled = false) {
  * Apply markdown
  */
 const formattedMessage = computed((message) => {
+  nextTick(() => {
+    setTimeout(() => scanAndRunScripts(), 0)
+  })
+
   return messages.value.reduce((msg, item) => {
     msg[item.id] = DOMPurify.sanitize(md.render(item.text), { ADD_TAGS: ['iframe'], ADD_ATTR: ['allow', 'allowfullscreen', 'frameborder', 'scrolling'] })
     msg[item.id] = md.render(item.text)
 
-    // Extract naked script tag and run it
-    const script = msg[item.id].match(/<script>([\s\S]*)<\/script>/)
-    if (script) {
-      nextTick(() => {
-        const scriptEl = document.createElement('script')
-        scriptEl.innerHTML = script[1]
-        document.body.appendChild(scriptEl)
-      })
-    }
-
-    // Do same for modules
-    const scriptModule = msg[item.id].match(/<script type="module">([\s\S]*)<\/script>/)
-    if (scriptModule) {
-      nextTick(() => {
-        const scriptEl = document.createElement('script')
-        scriptEl.type = 'module'
-        scriptEl.innerHTML = scriptModule[1]
-        document.body.appendChild(scriptEl)
-      })
-    }
-
-    // Manually load script tags with src
-    const scriptSrc = msg[item.id].match(/<script src="(.*)"><\/script>/)
-    if (scriptSrc) {
-      nextTick(() => {
-        const scriptEl = document.createElement('script')
-        scriptEl.src = scriptSrc[1]
-        document.body.appendChild(scriptEl)
-      })
-    }
-
-    // Wrap <video> tags in a container
-    const video = msg[item.id].match(/<video([\s\S]*)<\/video>/)
-    if (video) {
-      msg[item.id] = msg[item.id].replace(/<video([\s\S]*)<\/video>/, '<div class="video-container"><video$1</video><div class="video-container-mask"></div><i class="q-icon notranslate material-icons">play_circle_filled</i></div>')
-    }
-
     return msg
   }, {})
 })
+
+/**
+ * Scan and run scripts
+ */
+const scanAndRunScripts = debounce(() => {
+  if (!$messages.value?.$el || !$scriptsContainer.value) return
+
+  // Remove current scripts
+  $scriptsContainer.value.innerHTML = ''
+
+  // Extract script tags and run them
+  $messages.value.$el.querySelectorAll('script').forEach(script => {
+    const scriptEl = document.createElement('script')
+    scriptEl.innerHTML = script.innerHTML
+    $scriptsContainer.value.appendChild(scriptEl)
+  })
+
+  // Wrap <video> tags in a container
+  $messages.value.$el.querySelectorAll('video').forEach(video => {
+    if (video.parentElement.classList.contains('video-container')) return
+    video.outerHTML = `<div class="video-container">${video.outerHTML}<div class="video-container-mask"></div><i class="q-icon notranslate material-icons">play_circle_filled</i></div>`
+  })
+}, 100, {leading: false, trailing: true})
 
 /**
  * Publish channel
