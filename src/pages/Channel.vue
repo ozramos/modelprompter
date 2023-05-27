@@ -302,13 +302,6 @@ async function submit (ev) {
     // Create the message
     // Remove last newline
     input.value = input.value.replace(/\n$/, '')
-    console.log({
-      name: 'User',
-      text: input.value,
-      channel: getChannelID(),
-      realmId: getPosterRealm(),
-      sent: true
-    })
     const message = await store.createMessage({
       name: 'User',
       text: input.value,
