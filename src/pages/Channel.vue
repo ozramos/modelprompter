@@ -65,7 +65,7 @@ import {useObservable} from '@vueuse/rxjs'
 import {liveQuery} from 'dexie'
 import store from '/src/store/db.js'
 import llm from '/src/langchain/openai.js'
-import { useRouter, useRoute } from 'vue-router'
+import { useRouter, useRoute, onBeforeRouteLeave } from 'vue-router'
 import {useQuasar, debounce} from 'quasar'
 import md from '/src/boot/markdown.js'
 import DOMPurify from 'dompurify'
@@ -107,6 +107,19 @@ watch(isEditingMessage, (val) => {
   }
 })
 
+/**
+ * Useful for garbage cleaning (eg Layers.p5)
+ */
+onBeforeRouteLeave((to, from) => {
+  // Trigger custom event for hooks
+  const event = new CustomEvent('beforeRouteLeave', {
+    detail: {
+      to,
+      from
+    }
+  })
+})
+
 
 /**
  * Handle messages
@@ -115,11 +128,20 @@ let isThinking = ref(false)
 const messages = useObservable(liveQuery(async () => {
   const messages = await store.getMessagesWithSystemPrompt(getChannelID())
   // Stort by date
-  messages.sort((a, b) => {
+  return messages.sort((a, b) => {
     return a.created - b.created
   })
-  return messages
 }))
+
+// Poll for new messages
+// @todo let's pick a more optimal interval
+setInterval(async () => {
+  const newMessages = await store.getMessagesWithSystemPrompt(getChannelID())
+  messages.value = newMessages.sort((a, b) => {
+    return a.created - b.created
+  })
+}, 1000)
+
 
 watch(messages, () => {
   setTimeout(() => {
@@ -254,6 +276,20 @@ function formatDate (date) {
 function getChannelID () {
   return $router.currentRoute.value.params.id || 'chnSystem'
 }
+// Computed channel realm
+function getPosterRealm () {
+  // If not logged in, or not realm owner, add message to self
+  if (!store.db?.cloud?.currentUserId || ['unauthorized'].includes(store.db?.cloud?.currentUserId)) {
+    return null
+  }
+
+  // Return if specifically rlm-public
+  if (channel.value?.realmId === 'rlm-public') {
+    return 'rlm-public'
+  }
+
+  return store.db.cloud.currentUserId
+}
 
 /**
  * Submit a message
@@ -270,6 +306,7 @@ async function submit (ev) {
       name: 'User',
       text: input.value,
       channel: getChannelID(),
+      realmId: getPosterRealm(),
       sent: true
     })
 
@@ -296,6 +333,7 @@ async function submit (ev) {
         response.name = 'Agent'
         response.sent = false
         response.channel = message.channel
+        response.realmId = getPosterRealm()
 
         process.env.OPENAI_API_KEY && messages.value.push(await store.createMessage(response))
       } else {
@@ -340,18 +378,19 @@ async function redoLLM (ev, message) {
       response.sent = false
       response.channel = message.channel
       response.updated = message.updated
+      response.realmId = getPosterRealm()
 
       // Add the image near where it was restarted from
       if (message.name === 'User') {
         const msg = await store.createMessage(response)
         msg.created = message.created
         messages.value.splice(index+1, 0, msg)
-        await store.db.messages.update(msg.id, {created: message.created})
+        await store.db.messages.update(msg.id, {created: message.created, realmId: getPosterRealm()})
       } else {
         const msg = await store.createMessage(response)
         msg.created = message.created
         messages.value.splice(index, 0, msg)
-        await store.db.messages.update(msg.id, {created: message.created})
+        await store.db.messages.update(msg.id, {created: message.created, realmId: getPosterRealm()})
       }
 
       setTimeout(() => {

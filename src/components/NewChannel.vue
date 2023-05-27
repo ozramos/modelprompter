@@ -84,11 +84,15 @@ async function createChannel () {
  * Update a channel
  */
 async function updateChannel () {
+  // Get current channel realm
+  const curChannel = await store.db.channels.get(channelID.value)
+
   // Update the channel
   const channel = await store.updateChannel({
     id: channelID.value,
     name: channelName.value,
     prompt: prompt.value,
+    realmId: curChannel?.realmId,
   })
 
   await store.createMessage({
