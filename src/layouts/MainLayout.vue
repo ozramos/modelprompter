@@ -66,7 +66,12 @@ const $env = ref(globalThis.mp.env)
 
 const $q = useQuasar()
 const $router = useRouter()
-const channels = useObservable(liveQuery(async () => {
+const channels = useObservable(liveQuery(async () => await getChannels()))
+
+/**
+ * Get channels
+ */
+async function getChannels () {
   const channels = await store.getChannels()
 
   // Move id: chnSystem to the beginning
@@ -92,7 +97,15 @@ const channels = useObservable(liveQuery(async () => {
   sidebarTree.value = tree
 
   return channels
-}))
+}
+
+/**
+ * Poll for new channels
+ */
+// @todo let's pick a more optimal interval
+setInterval(async () => {
+  channels.value = await getChannels()
+}, 1000)
 
 /**
  * Update sort property on channels

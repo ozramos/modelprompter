@@ -163,6 +163,8 @@ class Store {
     channel.name = channel.name || 'Untitled'
     channel.prompt = channel.prompt || SystemPrompt
     channel.updated = channel.updated || new Date()
+    channel.realmId = channel.realmId || (this.db?.cloud?.currentUserId === 'unauthorized' ? null : this.db?.cloud?.currentUserId)
+    console.log(channel.realmId)
 
     await this.db.channels.update(channel.id, channel)
       .catch(this.error)
