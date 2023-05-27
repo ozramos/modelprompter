@@ -267,6 +267,20 @@ function formatDate (date) {
 function getChannelID () {
   return $router.currentRoute.value.params.id || 'chnSystem'
 }
+// Computed channel realm
+function getPosterRealm () {
+  // If not logged in, or not realm owner, add message to self
+  if (!store.db?.cloud?.currentUserId || ['unauthorized'].includes(store.db?.cloud?.currentUserId)) {
+    return null
+  }
+
+  // Return if specifically rlm-public
+  if (channel.value?.realmId === 'rlm-public') {
+    return 'rlm-public'
+  }
+
+  return store.db.cloud.currentUserId
+}
 
 /**
  * Submit a message
@@ -279,10 +293,18 @@ async function submit (ev) {
     // Create the message
     // Remove last newline
     input.value = input.value.replace(/\n$/, '')
+    console.log({
+      name: 'User',
+      text: input.value,
+      channel: getChannelID(),
+      realmId: getPosterRealm(),
+      sent: true
+    })
     const message = await store.createMessage({
       name: 'User',
       text: input.value,
       channel: getChannelID(),
+      realmId: getPosterRealm(),
       sent: true
     })
 
@@ -309,6 +331,7 @@ async function submit (ev) {
         response.name = 'Agent'
         response.sent = false
         response.channel = message.channel
+        response.realmId = getPosterRealm()
 
         process.env.OPENAI_API_KEY && messages.value.push(await store.createMessage(response))
       } else {
@@ -353,18 +376,19 @@ async function redoLLM (ev, message) {
       response.sent = false
       response.channel = message.channel
       response.updated = message.updated
+      response.realmId = getPosterRealm()
 
       // Add the image near where it was restarted from
       if (message.name === 'User') {
         const msg = await store.createMessage(response)
         msg.created = message.created
         messages.value.splice(index+1, 0, msg)
-        await store.db.messages.update(msg.id, {created: message.created})
+        await store.db.messages.update(msg.id, {created: message.created, realmId: getPosterRealm()})
       } else {
         const msg = await store.createMessage(response)
         msg.created = message.created
         messages.value.splice(index, 0, msg)
-        await store.db.messages.update(msg.id, {created: message.created})
+        await store.db.messages.update(msg.id, {created: message.created, realmId: getPosterRealm()})
       }
 
       setTimeout(() => {
