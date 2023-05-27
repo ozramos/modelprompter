@@ -8,13 +8,20 @@
 <table>
   <tr>
     <td><img width="549" alt="Screenshot 2023-05-22 080401" src="https://github.com/ozramos/modelprompter/assets/69949201/b2389e50-1fb1-4217-be90-0b864735ab94">
-</td>
+    </td>
     <td>
-
+<h3>Write and edit Markdown and JavaScript</h3>     
+      
 https://github.com/ozramos/modelprompter/assets/69949201/57ee300e-d2cc-4d1b-a5e2-ea60470191cf
 
-</td>
   </tr>
+  <tr>
+    <td>
+      <h3>Live code with any library or framework</h3>
+      
+https://github.com/ozramos/modelprompter/assets/69949201/5f41da86-eb2e-46f4-9c03-2845e69f7b46
+
+  </tr>  
 </table>
 
 ## Features
