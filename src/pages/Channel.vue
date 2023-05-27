@@ -65,7 +65,7 @@ import {useObservable} from '@vueuse/rxjs'
 import {liveQuery} from 'dexie'
 import store from '/src/store/db.js'
 import llm from '/src/langchain/openai.js'
-import { useRouter, useRoute } from 'vue-router'
+import { useRouter, useRoute, onBeforeRouteLeave } from 'vue-router'
 import {useQuasar, debounce} from 'quasar'
 import md from '/src/boot/markdown.js'
 import DOMPurify from 'dompurify'
@@ -105,6 +105,19 @@ watch(isEditingMessage, (val) => {
   } else {
     splitter.value = 50
   }
+})
+
+/**
+ * Useful for garbage cleaning (eg Layers.p5)
+ */
+onBeforeRouteLeave((to, from) => {
+  // Trigger custom event for hooks
+  const event = new CustomEvent('beforeRouteLeave', {
+    detail: {
+      to,
+      from
+    }
+  })
 })
 
 
