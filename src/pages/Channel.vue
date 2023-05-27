@@ -128,11 +128,20 @@ let isThinking = ref(false)
 const messages = useObservable(liveQuery(async () => {
   const messages = await store.getMessagesWithSystemPrompt(getChannelID())
   // Stort by date
-  messages.sort((a, b) => {
+  return messages.sort((a, b) => {
     return a.created - b.created
   })
-  return messages
 }))
+
+// Poll for new messages
+// @todo let's pick a more optimal interval
+setInterval(async () => {
+  const newMessages = await store.getMessagesWithSystemPrompt(getChannelID())
+  messages.value = newMessages.sort((a, b) => {
+    return a.created - b.created
+  })
+}, 1000)
+
 
 watch(messages, () => {
   setTimeout(() => {
