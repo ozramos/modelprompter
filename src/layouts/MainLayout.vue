@@ -31,6 +31,7 @@ q-layout(view='lHh Lpr lFf')
               q-item-label(v-if='item.channel.caption' caption) {{ item.channel.caption }}
             q-item-section
               q-btn(rel='edit' flat dense icon='edit' aria-label='Edit' @click='ev => editChannel(ev, item.channel)')
+              q-btn(rel='edit' flat dense icon='content_copy' aria-label='Copy' @click='ev => copyChannel(ev, item.channel)')
               q-btn(v-if='item.channel.id !== "chnSystem"' rel='delete' flat dense icon='delete' aria-label='Delete' @click='ev => deleteChannel(ev, item.channel)')
             q-menu(touch-position context-menu @show='ev => ev.preventDefault() && ev.stopPropagation()')
               q-btn(rel='edit' flat icon='edit' aria-label='Edit' @click='ev => editChannel(ev, item.channel)')
@@ -172,5 +173,61 @@ async function deleteChannel (ev, channel) {
 
   $router.push('/')
   return false
+}
+
+/**
+ * Copy channel
+ */
+async function copyChannel (ev, channel) {
+  // Clone the channel but assign the realmId to user
+  let newChannel = Object.assign({}, channel, {
+    name: `${channel.name} (copy)`,
+    realmId: getPosterRealm(channel)
+  })
+  delete newChannel.id
+
+  // Create the channel
+  const newChan = await store.createChannel(newChannel)
+
+  // Copy messages to new channel
+  const messages = await store.getMessagesWithSystemPrompt(channel.id)
+  messages.forEach(async m => {
+    m = Object.assign({}, m)
+    delete m.id
+    const message = await store.createMessage({
+      ...m,
+      channel: newChan.id,
+      realmId: newChan.id
+    })
+    await store.updateMessage(message.id, {
+      created: m.created,
+    }, true)
+  })
+
+  // Notify
+  $q.notify({
+    message: `Copied channel ${channel.name}`,
+  })
+
+  ev.preventDefault()
+  ev.stopPropagation()
+
+  $router.push({ name: 'channel', params: { id: newChan.id } })
+  return false
+}
+
+// Computed channel realm
+function getPosterRealm (channel) {
+  // If not logged in, or not realm owner, add message to self
+  if (!store.db?.cloud?.currentUserId || ['unauthorized'].includes(store.db?.cloud?.currentUserId)) {
+    return null
+  }
+
+  // Return if specifically rlm-public
+  if (channel.value?.realmId === 'rlm-public') {
+    return 'rlm-public'
+  }
+
+  return store.db.cloud.currentUserId
 }
 </script>
