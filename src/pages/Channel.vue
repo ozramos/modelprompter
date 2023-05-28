@@ -137,9 +137,14 @@ const messages = useObservable(liveQuery(async () => {
 // @todo let's pick a more optimal interval
 setInterval(async () => {
   const newMessages = await store.getMessagesWithSystemPrompt(getChannelID())
-  messages.value = newMessages.sort((a, b) => {
-    return a.created - b.created
-  })
+
+  // Scan to see if there were any changes
+  for (let i = 0; i < newMessages.length; i++) {
+    if (newMessages[i].text !== messages.value[i].text) {
+      messages.value = newMessages
+      break
+    }
+  }
 }, 1000)
 
 
@@ -528,7 +533,7 @@ const scanAndRunScripts = debounce(() => {
     if (video.parentElement.classList.contains('video-container')) return
     video.outerHTML = `<div class="video-container">${video.outerHTML}<div class="video-container-mask"></div><i class="q-icon notranslate material-icons">play_circle_filled</i></div>`
   })
-}, 100, {leading: false, trailing: true})
+}, 100)
 
 /**
  * Publish channel
