@@ -141,6 +141,19 @@ class Store {
   }
 
   /**
+   * Update message
+   * @object message
+   * @boolean skipUpdated Whether to skip .updated
+   */
+  async updateMessage (messageId, message = {}, skipUpdated = false) {
+    if (!skipUpdated) {
+      message.updated = message.updated || new Date()
+    }
+    await this.db.messages.update(messageId, message)
+    return await this.db.messages.get(messageId)
+  }
+
+  /**
    * Create Channel
    */
   async createChannel (channel = {}) {

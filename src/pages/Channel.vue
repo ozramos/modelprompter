@@ -60,7 +60,7 @@ q-page.boxed(:style-fn='() => ({ height: "calc(100vh - 50px)" })')
 
 
 <script setup>
-import {ref, onMounted, watch, computed, nextTick } from 'vue'
+import {ref, onMounted, onUnmounted, watch, computed, nextTick } from 'vue'
 import {useObservable} from '@vueuse/rxjs'
 import {liveQuery} from 'dexie'
 import store from '/src/store/db.js'
@@ -133,19 +133,9 @@ const messages = useObservable(liveQuery(async () => {
   })
 }))
 
-// Poll for new messages
-// @todo let's pick a more optimal interval
-setInterval(async () => {
-  const newMessages = await store.getMessagesWithSystemPrompt(getChannelID())
-  messages.value = newMessages.sort((a, b) => {
-    return a.created - b.created
-  })
-}, 1000)
-
-
 watch(messages, () => {
   setTimeout(() => {
-    if (channel.value.readFromTop) {
+    if (channel.value?.readFromTop) {
       maybeScrollToTop(true)
     } else {
       maybeScrollToBottom(true)
@@ -232,12 +222,32 @@ watch(() => $route.params.id, async (newId = 'chnSystem') => {
   }
   redirectOnEmptyChannel()
 })
+
+let pollingInterval = null
 onMounted(async () => {
   messages.value = await store.getMessagesWithSystemPrompt(getChannelID())
   channel.value = await store.db.channels.get(getChannelID())
   isChatModeDisabled.value = !!channel?.chatModeDisabled
 
   redirectOnEmptyChannel()
+
+  // Poll for new messages
+  // @todo let's pick a more optimal interval
+  pollingInterval = setInterval(async () => {
+    const newMessages = await store.getMessagesWithSystemPrompt(getChannelID())
+
+    // Scan to see if there were any changes
+    for (let i = 0; i < newMessages.length; i++) {
+      if (newMessages[i]?.text !== messages.value?.[i]?.text) {
+        messages.value = newMessages
+        break
+      }
+    }
+  }, 1000)
+})
+
+onUnmounted(() => {
+  clearInterval(pollingInterval)
 })
 
 async function redirectOnEmptyChannel () {
@@ -528,7 +538,7 @@ const scanAndRunScripts = debounce(() => {
     if (video.parentElement.classList.contains('video-container')) return
     video.outerHTML = `<div class="video-container">${video.outerHTML}<div class="video-container-mask"></div><i class="q-icon notranslate material-icons">play_circle_filled</i></div>`
   })
-}, 100, {leading: false, trailing: true})
+}, 100)
 
 /**
  * Publish channel
