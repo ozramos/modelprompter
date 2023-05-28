@@ -34,7 +34,8 @@ q-layout(view='lHh Lpr lFf')
               q-btn(rel='edit' flat dense icon='content_copy' aria-label='Copy' @click='ev => copyChannel(ev, item.channel)')
               q-btn(v-if='item.channel.id !== "chnSystem"' rel='delete' flat dense icon='delete' aria-label='Delete' @click='ev => deleteChannel(ev, item.channel)')
             q-menu(touch-position context-menu @show='ev => ev.preventDefault() && ev.stopPropagation()')
-              q-btn(rel='edit' flat icon='edit' aria-label='Edit' @click='ev => editChannel(ev, item.channel)')
+              q-btn.q-pl-sm(rel='edit' flat round icon='edit' aria-label='Edit' @click='ev => editChannel(ev, item.channel)')
+              q-btn(rel='edit' flat round icon='content_copy' aria-label='Copy' @click='ev => copyChannel(ev, item.channel)')
               q-btn(rel='delete' flat round icon='delete' aria-label='Delete' @click='ev => deleteChannel(ev, item.channel)')
 
     //- Add channel button at bottom of list
