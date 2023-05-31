@@ -8,9 +8,8 @@ q-btn.full-width.q-pl-sm(icon='chat' @click='showModal()') New Channel
       q-card-section.q-pb-none
         p
           q-input(v-model='channelName' label='Channel name' outlined)
-        div Describe how this server should channel and the agents within it should behave.
       q-card-section.flex-auto.align-stretch
-        q-input.full-height.flex-auto(v-model='prompt' label='Prompt' outlined type='textarea')
+        q-input.full-height.flex-auto(v-model='prompt' label='Initial system prompt' outlined type='textarea' autofocus)
       q-card-actions.flex-unset(align='right')
         q-btn(flat @click='hideModal') Cancel
         q-space
@@ -25,10 +24,11 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import store from '/src/store/db.js'
 import {useQuasar} from 'quasar'
+import SystemPrompt from '/system-prompt.txt?raw'
 
 const isDialogVisible = ref(false)
 const channelName = ref('Untitled')
-const prompt = ref('')
+const prompt = ref(SystemPrompt)
 const $q = useQuasar()
 
 const $router = useRouter()
@@ -49,7 +49,7 @@ function showModal (channel = {}) {
     prompt.value = channel.prompt
   } else {
     channelName.value = 'Untitled'
-    prompt.value = ''
+    prompt.value = SystemPrompt
   }
 }
 
