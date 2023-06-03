@@ -198,7 +198,7 @@ async function copyChannel (ev, channel) {
     const message = await store.createMessage({
       ...m,
       channel: newChan.id,
-      realmId: newChan.id
+      realmId: newChan.realmId
     })
     await store.updateMessage(message.id, {
       created: m.created,

@@ -155,19 +155,23 @@ let lastScrollTop = 0
 function maybeScrollToBottom (force = false) {
   if (channel.readFromTop && !force) return
   setTimeout(() => {
-    if ($messages.value.scrollTop > lastScrollTop - 200) {
-      $messages.value.scrollTop = $messages.value.scrollHeight
+    const $scroll = $messages.value?.$el?.querySelector('.q-splitter__before')
+    if ($scroll?.scrollTop > lastScrollTop - 200) {
+      $scroll.scrollTop = $scroll.scrollHeight
     }
     lastScrollTop = $messages.value.scrollTop
-  }, 0)
+  }, 50)
 }
 
 function maybeScrollToTop (force = false) {
   if (!channel.readFromTop && !force) return
   setTimeout(() => {
-    $messages.value.scrollTop = 0
+    const $scroll = $messages.value?.$el?.querySelector('.q-splitter__before')
+    if ($scroll) {
+      $scroll.scrollTop = 0
+    }
     lastScrollTop = 0
-  }, 0)
+  }, 50)
 }
 
 /**
