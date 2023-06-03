@@ -160,7 +160,7 @@ function maybeScrollToBottom (force = false) {
       $scroll.scrollTop = $scroll.scrollHeight
     }
     lastScrollTop = $messages.value.scrollTop
-  }, 0)
+  }, 50)
 }
 
 function maybeScrollToTop (force = false) {
@@ -171,7 +171,7 @@ function maybeScrollToTop (force = false) {
       $scroll.scrollTop = 0
     }
     lastScrollTop = 0
-  }, 0)
+  }, 50)
 }
 
 /**
